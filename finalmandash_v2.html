@@ -1,0 +1,2929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Workforce AI — Enterprise Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--sb:#0d1320;--card:#161b22;--border:rgba(48,54,61,0.8);
+  --primary:#2f81f7;--pglow:rgba(47,129,247,0.18);
+  --accent:#3fb950;--warn:#d29922;--danger:#f78166;--purple:#a371f7;
+  --muted:#8b949e;--text:#e6edf3;--text2:#c9d1d9;--r:10px;--rlg:12px;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
+.shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{background:var(--sb);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-brand{display:flex;align-items:center;gap:11px;padding:18px 20px 16px;border-bottom:1px solid var(--border)}
+.brand-icon{width:36px;height:36px;border-radius:10px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.brand-name{font-size:15px;font-weight:700;color:var(--primary);line-height:1.1}
+.brand-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.nav-grp{padding:14px 20px 6px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.9px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 20px;margin:1px 0;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;transition:background .14s,color .14s;border-left:3px solid transparent;font-family:'Inter',inherit}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text2)}
+.nav-item.active{background:rgba(47,129,247,0.12);color:var(--primary);font-weight:600;border-left:3px solid var(--primary)}
+.ni{font-size:14px;width:16px;text-align:center;flex-shrink:0}
+.nbadge{margin-left:auto;min-width:18px;height:18px;padding:0 5px;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.nb-red{background:var(--danger);color:#fff}
+.nb-green{background:var(--accent);color:#fff}
+.nb-muted{background:rgba(255,255,255,0.1);color:var(--muted)}
+.sb-spacer{flex:1}
+.sb-footer{padding:14px 20px;border-top:1px solid var(--border)}
+.sys-live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--accent);margin-bottom:10px}
+.ldot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pulse 1.6s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.wm-row{display:flex;align-items:center;gap:10px}
+.wm-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.wm-name{font-size:12px;font-weight:600;color:var(--text2)}
+.wm-role{font-size:10px;color:var(--muted)}
+
+/* MAIN */
+.main{display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--card);border-bottom:1px solid var(--border)}
+.page-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:3px}
+.page-sub{font-size:12px;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.tbadge{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid}
+.tbadge-green{color:var(--accent);border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.08)}
+.tbadge-blue{color:var(--primary);border-color:rgba(47,129,247,0.3);background:rgba(47,129,247,0.08)}
+
+.tabbar{display:flex;align-items:center;gap:2px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--border)}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;font-family:'Inter',inherit;white-space:nowrap}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--primary);border-bottom:2px solid var(--primary);font-weight:600}
+.tab-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;font-size:10px;font-weight:700;margin-left:6px}
+.tb-red{background:var(--danger);color:#fff}
+.tb-blue{background:var(--primary);color:#fff}
+
+.content{padding:20px 24px;display:flex;flex-direction:column;gap:18px;overflow-y:auto;flex:1}
+.panel{display:none}.panel.active{display:flex;flex-direction:column;gap:18px}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:16px 18px;position:relative;overflow:hidden}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.mc-blue::before{background:var(--primary)}.mc-red::before{background:var(--danger)}
+.mc-green::before{background:var(--accent)}.mc-warn::before{background:var(--warn)}
+.mc-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.mc-val{font-size:28px;font-weight:800;color:var(--text);line-height:1;margin-bottom:5px}
+.mc-delta{font-size:11px;font-weight:500}
+.up{color:var(--accent)}.dn{color:var(--danger)}
+
+/* MID ROW */
+.mid{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start}
+.engine{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:22px}
+.eng-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.eng-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:9px}
+.eng-icon{width:28px;height:28px;border-radius:8px;background:rgba(47,129,247,0.15);border:1px solid rgba(47,129,247,0.3);display:flex;align-items:center;justify-content:center;font-size:14px}
+.ai-pill{font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;border:1px solid rgba(47,129,247,0.35);color:var(--primary);background:rgba(47,129,247,0.08)}
+.flabel{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.fselect,.finput,.ftextarea{width:100%;background:rgba(13,17,23,0.7);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:10px 13px;font-size:13px;font-family:'Inter',inherit;outline:none;transition:border-color .15s}
+.fselect:focus,.finput:focus,.ftextarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--pglow)}
+.fselect option{background:#161b22}
+.ftextarea{resize:vertical;min-height:80px;line-height:1.6}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px}
+.counter{display:flex;align-items:center;background:rgba(13,17,23,0.7);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.cbtn{background:transparent;border:none;color:var(--primary);width:38px;height:40px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.cbtn:hover{background:var(--pglow)}
+.cval{flex:1;text-align:center;font-size:14px;font-weight:700;color:var(--text)}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.intern{background:rgba(210,153,34,0.07);border:1px solid rgba(210,153,34,0.22);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.int-title{font-size:13px;font-weight:700;color:#e3c97a;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.smart-pill{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;background:rgba(210,153,34,0.2);border:1px solid rgba(210,153,34,0.4);color:var(--warn)}
+.int-sub{font-size:11px;color:var(--muted)}
+.int-ctrl{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ibtn{width:28px;height:28px;border-radius:7px;border:1px solid rgba(210,153,34,0.35);background:rgba(210,153,34,0.1);color:var(--warn);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.ibtn:hover{background:rgba(210,153,34,0.22)}
+.ival{font-size:18px;font-weight:800;color:#e3c97a;min-width:20px;text-align:center}
+.run-btn{width:100%;padding:13px;background:var(--primary);border:none;border-radius:var(--r);color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',inherit;transition:background .15s,transform .1s}
+.run-btn:hover{background:#388ae3}.run-btn:active{transform:scale(.98)}.run-btn:disabled{opacity:.65;cursor:not-allowed}
+.match-box{display:none;background:rgba(63,185,80,0.05);border:1px solid rgba(63,185,80,0.2);border-radius:var(--r);padding:14px;margin-top:14px;animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.match-box.show{display:block}
+.mtitle{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.mrow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(63,185,80,0.1);font-size:12px;color:var(--muted)}
+.mrow:last-child{border:none}.mrow span:last-child{color:var(--accent);font-weight:600}
+.spin{display:none;width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CHARTS */
+.chart-col{display:flex;flex-direction:column;gap:14px}
+.ccrd{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:18px}
+.chart-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.cldot{width:8px;height:8px;border-radius:50%}
+.bar-leg{display:flex;gap:14px;margin-bottom:10px}
+.bl{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.blsq{width:10px;height:10px;border-radius:2px}
+.pie-leg{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.prow{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+.psq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+/* EMAIL LOG */
+.email-layout{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start}
+.email-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.estat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px}
+.estat-val{font-size:22px;font-weight:800;line-height:1;margin-bottom:3px}
+.estat-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.inbox-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden}
+.inbox-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.inbox-title{font-size:13px;font-weight:700;color:var(--text)}
+.ftag{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid var(--border);color:var(--muted);background:transparent;transition:all .14s;font-family:'Inter',inherit}
+.ftag.active,.ftag:hover{background:var(--pglow);color:var(--primary);border-color:rgba(47,129,247,0.3)}
+.email-item{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .14s;display:flex;align-items:flex-start;gap:12px}
+.email-item:last-child{border:none}.email-item:hover{background:rgba(255,255,255,0.03)}
+.email-item.unread{background:rgba(47,129,247,0.04)}
+.email-item.selected{background:rgba(47,129,247,0.1);border-left:3px solid var(--primary)}
+.ei-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px}
+.ei-body{flex:1;min-width:0}
+.ei-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.ei-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ei-time{font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px}
+.ei-subject{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.ei-preview{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ei-badges{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.ebadge{font-size:10px;font-weight:600;padding:1px 7px;border-radius:4px}
+.eb-sent{background:rgba(63,185,80,0.12);color:var(--accent);border:1px solid rgba(63,185,80,0.2)}
+.eb-pending{background:rgba(210,153,34,0.12);color:var(--warn);border:1px solid rgba(210,153,34,0.2)}
+.eb-failed{background:rgba(247,129,102,0.12);color:var(--danger);border:1px solid rgba(247,129,102,0.2)}
+.eb-auto{background:rgba(47,129,247,0.12);color:var(--primary);border:1px solid rgba(47,129,247,0.2)}
+.unread-dot{width:7px;height:7px;background:var(--primary);border-radius:50%;flex-shrink:0;margin-top:6px}
+.email-detail{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:24px;display:flex;flex-direction:column;gap:16px}
+.ed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--muted);gap:10px}
+.ed-header{border-bottom:1px solid var(--border);padding-bottom:16px}
+.ed-subject{font-size:16px;font-weight:700;color:var(--text);margin-bottom:10px}
+.ed-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.ed-fname{font-size:12px;font-weight:600;color:var(--text2)}
+.ed-femail{font-size:11px;color:var(--muted)}
+.ed-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ed-body{font-size:13px;color:var(--text2);line-height:1.75;white-space:pre-wrap}
+.ed-actions{display:flex;gap:10px;padding-top:4px;border-top:1px solid var(--border);flex-wrap:wrap}
+.eact-btn{padding:8px 16px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',inherit;border:1px solid var(--border);background:transparent;color:var(--text2);transition:all .14s}
+.eact-btn:hover{background:rgba(255,255,255,0.05);color:var(--text)}
+.eact-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.eact-btn.primary:hover{background:#388ae3}
+
+/* CREATE PROJECT */
+.cp-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.cp-form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:26px}
+.cp-section{margin-bottom:22px}
+.cp-section-title{font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.cp-section-icon{width:22px;height:22px;border-radius:6px;background:rgba(47,129,247,0.15);display:flex;align-items:center;justify-content:center;font-size:11px}
+.skill-input-wrap{display:flex;gap:8px;align-items:flex-start}
+.skill-input-wrap .finput{flex:1}
+.add-skill-btn{padding:10px 14px;border-radius:var(--r);background:rgba(47,129,247,0.12);border:1px solid rgba(47,129,247,0.3);color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',inherit;transition:background .14s;flex-shrink:0}
+.add-skill-btn:hover{background:rgba(47,129,247,0.22)}
+.skills-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:20px}
+.skill-chip{display:flex;align-items:center;gap:5px;background:rgba(47,129,247,0.1);border:1px solid rgba(47,129,247,0.25);color:var(--primary);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600}
+.chip-remove{cursor:pointer;font-size:13px;line-height:1;color:var(--primary);opacity:.7;transition:opacity .12s}
+.chip-remove:hover{opacity:1}
+.priority-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.priority-opt{border:1.5px solid var(--border);border-radius:var(--r);padding:10px;cursor:pointer;text-align:center;transition:all .15s}
+.priority-opt:hover{border-color:var(--primary);background:var(--pglow)}
+.priority-opt.selected-high{border-color:var(--danger);background:rgba(247,129,102,0.1)}
+.priority-opt.selected-med{border-color:var(--warn);background:rgba(210,153,34,0.1)}
+.priority-opt.selected-low{border-color:var(--accent);background:rgba(63,185,80,0.1)}
+.po-label{font-size:12px;font-weight:700;margin-top:4px}
+.po-high{color:var(--danger)}.po-med{color:var(--warn)}.po-low{color:var(--accent)}
+.cp-submit-row{display:flex;gap:10px;margin-top:4px}
+.cp-submit{flex:1;padding:13px;background:var(--primary);border:none;border-radius:var(--r);color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',inherit;transition:background .15s,transform .1s}
+.cp-submit:hover{background:#388ae3}.cp-submit:active{transform:scale(.98)}
+.cp-reset{padding:13px 20px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',inherit;transition:all .14s}
+.cp-reset:hover{border-color:var(--danger);color:var(--danger)}
+.cp-sidebar{display:flex;flex-direction:column;gap:14px}
+.cp-list-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden}
+.cp-list-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.cp-list-title{font-size:13px;font-weight:700;color:var(--text)}
+.proj-count{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(47,129,247,0.15);color:var(--primary)}
+.proj-item{padding:12px 16px;border-bottom:1px solid var(--border);transition:background .14s}
+.proj-item:last-child{border:none}.proj-item:hover{background:rgba(255,255,255,0.02)}
+.proj-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;display:flex;align-items:center;justify-content:space-between}
+.proj-meta{font-size:11px;color:var(--muted);margin-bottom:5px}
+.proj-tags{display:flex;gap:5px;flex-wrap:wrap}
+.ptag{font-size:10px;font-weight:600;padding:1px 7px;border-radius:4px}
+.pt-blue{background:rgba(47,129,247,0.12);color:var(--primary);border:1px solid rgba(47,129,247,0.2)}
+.pt-green{background:rgba(63,185,80,0.12);color:var(--accent);border:1px solid rgba(63,185,80,0.2)}
+.pt-warn{background:rgba(210,153,34,0.12);color:var(--warn);border:1px solid rgba(210,153,34,0.2)}
+.pt-red{background:rgba(247,129,102,0.12);color:var(--danger);border:1px solid rgba(247,129,102,0.2)}
+.empty-proj{padding:30px 16px;text-align:center;color:var(--muted);font-size:12px}
+.required-star{color:var(--danger);margin-left:2px}
+.field-error{font-size:11px;color:var(--danger);margin-top:4px;display:none}
+.finput.error,.fselect.error,.ftextarea.error{border-color:var(--danger)}
+.toast{position:fixed;bottom:24px;right:24px;background:#1c2333;border:1px solid rgba(63,185,80,0.3);border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,0.4);transform:translateY(80px);opacity:0;transition:all .3s ease;z-index:999;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ===== EMPLOYEE FLASHCARDS ===== */
+#employee-cards-section{margin-top:20px;animation:fi .4s ease}
+.cards-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cards-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px}
+.cards-title-icon{width:28px;height:28px;border-radius:8px;background:rgba(63,185,80,0.15);border:1px solid rgba(63,185,80,0.3);display:flex;align-items:center;justify-content:center;font-size:14px}
+.cards-count{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(63,185,80,0.12);border:1px solid rgba(63,185,80,0.25);color:var(--accent)}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.emp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s;animation:cardIn .35s ease both;cursor:pointer}
+.emp-card:hover{transform:translateY(-3px);border-color:rgba(47,129,247,0.35);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.emp-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--purple))}
+.emp-card.intern-card::before{background:linear-gradient(90deg,var(--warn),#e3c97a)}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.emp-card:nth-child(1){animation-delay:.05s}
+.emp-card:nth-child(2){animation-delay:.1s}
+.emp-card:nth-child(3){animation-delay:.15s}
+.emp-card:nth-child(4){animation-delay:.2s}
+.emp-card:nth-child(5){animation-delay:.25s}
+.emp-card:nth-child(6){animation-delay:.3s}
+.emp-card:nth-child(7){animation-delay:.35s}
+.emp-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.emp-avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0}
+.emp-match-badge{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px}
+.match-high{background:rgba(63,185,80,0.15);border:1px solid rgba(63,185,80,0.35);color:var(--accent)}
+.match-med{background:rgba(47,129,247,0.15);border:1px solid rgba(47,129,247,0.35);color:var(--primary)}
+.match-low{background:rgba(210,153,34,0.15);border:1px solid rgba(210,153,34,0.35);color:var(--warn)}
+.emp-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.emp-role{font-size:11px;color:var(--muted);margin-bottom:10px}
+.emp-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.emp-stat{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.emp-stat-val{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:1px}
+.emp-stat-label{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.emp-skills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.emp-skill-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:rgba(47,129,247,0.1);border:1px solid rgba(47,129,247,0.2);color:var(--primary)}
+.emp-skill-tag.match{background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.25);color:var(--accent)}
+.emp-bench-bar{margin-bottom:12px}
+.bench-bar-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px}
+.bench-bar-track{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.bench-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.bench-risk-low{background:var(--accent)}.bench-risk-med{background:var(--warn)}.bench-risk-high{background:var(--danger)}
+.emp-card-footer{display:flex;gap:6px;padding-top:12px;border-top:1px solid var(--border)}
+.emp-action-btn{flex:1;padding:7px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',inherit;transition:all .14s;text-align:center;border:1px solid}
+.emp-btn-primary{background:rgba(47,129,247,0.15);border-color:rgba(47,129,247,0.3);color:var(--primary)}
+.emp-btn-primary:hover{background:rgba(47,129,247,0.25)}
+.emp-btn-ghost{background:transparent;border-color:var(--border);color:var(--muted)}
+.emp-btn-ghost:hover{border-color:var(--text2);color:var(--text2)}
+.emp-intern-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(210,153,34,0.15);border:1px solid rgba(210,153,34,0.3);color:var(--warn);margin-bottom:8px}
+.cards-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--rlg)}
+.cards-loading-spinner{width:36px;height:36px;border:3px solid rgba(47,129,247,.2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+.cards-loading-text{font-size:13px;font-weight:600;color:var(--muted)}
+.cards-loading-sub{font-size:11px;color:rgba(139,148,158,0.6);text-align:center;max-width:280px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#1c2128;border:1px solid var(--border);border-radius:14px;width:480px;max-width:90vw;max-height:85vh;overflow-y:auto;padding:28px;animation:modalIn .25s ease;position:relative}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .14s}
+.modal-close:hover{background:rgba(255,255,255,0.05);color:var(--text)}
+.modal-emp-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.modal-avatar{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0}
+.modal-emp-name{font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px}
+.modal-emp-role{font-size:13px;color:var(--muted);margin-bottom:6px}
+.modal-section{margin-bottom:18px}
+.modal-section-title{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.modal-kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-kv-item{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.modal-kv-val{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:2px}
+.modal-kv-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.modal-skills-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.modal-skill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(47,129,247,0.1);border:1px solid rgba(47,129,247,0.2);color:var(--primary)}
+.modal-skill.match{background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.25);color:var(--accent)}
+.modal-reason{font-size:12px;color:var(--text2);line-height:1.7;background:rgba(47,129,247,0.05);border:1px solid rgba(47,129,247,0.15);border-radius:8px;padding:12px 14px}
+.modal-actions{display:flex;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}
+.modal-btn{flex:1;padding:11px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',inherit;transition:all .15s;border:1px solid}
+.modal-btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.modal-btn-primary:hover{background:#388ae3}
+.modal-btn-ghost{background:transparent;border-color:var(--border);color:var(--muted)}
+.modal-btn-ghost:hover{border-color:var(--text2);color:var(--text2)}
+.modal-btn-warn{background:rgba(210,153,34,0.12);border-color:rgba(210,153,34,0.3);color:var(--warn)}
+.modal-btn-warn:hover{background:rgba(210,153,34,0.22)}
+
+/* UPSKILLING PANEL */
+.up-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.up-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;transition:border-color .2s}
+.up-card:hover{border-color:rgba(163,113,247,0.3)}
+.up-card-icon{font-size:28px;margin-bottom:12px}
+.up-card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+.up-card-sub{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.up-progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
+.up-progress-track{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;margin-bottom:14px}
+.up-progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--primary),var(--purple))}
+.up-enroll-btn{width:100%;padding:9px;background:rgba(163,113,247,0.12);border:1px solid rgba(163,113,247,0.3);border-radius:var(--r);color:var(--purple);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',inherit;transition:background .14s}
+.up-enroll-btn:hover{background:rgba(163,113,247,0.22)}
+.up-enroll-btn.enrolled{background:rgba(63,185,80,0.12);border-color:rgba(63,185,80,0.3);color:var(--accent);cursor:default}
+
+/* BENCH PREDICTION */
+.bench-table{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden}
+.bench-table-header{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 120px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.bench-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 120px;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;transition:background .14s}
+.bench-row:last-child{border:none}
+.bench-row:hover{background:rgba(255,255,255,0.02)}
+.bench-name{font-size:13px;font-weight:600;color:var(--text)}
+.bench-role{font-size:11px;color:var(--muted)}
+.risk-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block}
+.risk-high{background:rgba(247,129,102,0.12);color:var(--danger);border:1px solid rgba(247,129,102,0.2)}
+.risk-med{background:rgba(210,153,34,0.12);color:var(--warn);border:1px solid rgba(210,153,34,0.2)}
+.risk-low{background:rgba(63,185,80,0.12);color:var(--accent);border:1px solid rgba(63,185,80,0.2)}
+.bench-act-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',inherit;background:rgba(47,129,247,0.1);border:1px solid rgba(47,129,247,0.25);color:var(--primary);transition:background .14s}
+.bench-act-btn:hover{background:rgba(47,129,247,0.2)}
+
+/* SKILL TRENDS */
+.trends-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.trend-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:18px}
+.trend-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(48,54,61,0.4)}
+.trend-row:last-child{border:none}
+.trend-skill{font-size:13px;font-weight:600;color:var(--text2);min-width:100px}
+.trend-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.trend-bar-fill{height:100%;border-radius:3px}
+.trend-pct{font-size:11px;font-weight:700;min-width:36px;text-align:right}
+
+/* GIG MARKET */
+.gig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.gig-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;transition:border-color .2s,transform .2s}
+.gig-card:hover{border-color:rgba(47,129,247,0.3);transform:translateY(-2px)}
+.gig-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.gig-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.gig-company{font-size:11px;color:var(--muted)}
+.gig-rate{font-size:16px;font-weight:800;color:var(--accent)}
+.gig-rate-label{font-size:10px;color:var(--muted)}
+.gig-tags{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}
+.gig-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:rgba(163,113,247,0.1);border:1px solid rgba(163,113,247,0.2);color:var(--purple)}
+.gig-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)}
+.gig-duration{font-size:11px;color:var(--muted)}
+.gig-apply-btn{padding:6px 14px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',inherit;background:rgba(47,129,247,0.12);border:1px solid rgba(47,129,247,0.3);color:var(--primary);transition:background .14s}
+.gig-apply-btn:hover{background:rgba(47,129,247,0.22)}
+.gig-apply-btn.applied{background:rgba(63,185,80,0.12);border-color:rgba(63,185,80,0.3);color:var(--accent);cursor:default}
+
+/* REPORTS */
+.reports-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.report-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;transition:border-color .2s}
+.report-card:hover{border-color:rgba(47,129,247,0.3)}
+.report-icon{font-size:26px;margin-bottom:10px}
+.report-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+.report-sub{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.report-btn{width:100%;padding:9px;background:rgba(47,129,247,0.1);border:1px solid rgba(47,129,247,0.25);border-radius:var(--r);color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',inherit;transition:background .14s}
+.report-btn:hover{background:rgba(47,129,247,0.2)}
+
+/* SETTINGS */
+.settings-layout{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start}
+.settings-nav{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden}
+.settings-nav-item{padding:12px 16px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;width:100%;text-align:left;border-bottom:1px solid var(--border);transition:all .14s;font-family:'Inter',inherit;display:flex;align-items:center;gap:10px}
+.settings-nav-item:last-child{border:none}
+.settings-nav-item.active,.settings-nav-item:hover{background:rgba(47,129,247,0.08);color:var(--primary)}
+.settings-panel-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rlg);padding:24px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border:none}
+.settings-label{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:3px}
+.settings-sub{font-size:11px;color:var(--muted)}
+.toggle{position:relative;width:42px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.1);border-radius:11px;transition:.3s}
+.toggle input:checked+.toggle-slider{background:var(--primary)}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked+.toggle-slider:before{left:23px}
+</style>
+
+<!-- ═══ PROFESSIONAL ANIMATION LAYER ═══ -->
+<style>
+
+/* ═══════════════════════════════════════════════════
+   PROFESSIONAL ANIMATION LAYER — DO NOT MODIFY OTHER CODE
+   ═══════════════════════════════════════════════════ */
+
+/* ── BUTTON HOVER ANIMATIONS ── */
+/* All buttons: lift + glow on hover */
+button, .run-btn, .cp-submit, .add-skill-btn, .eact-btn,
+.nav-item, .tab, .ftag, .filter-chip, .action-btn,
+.topbar-btn, .btn-submit, .btn-cancel, .convert-btn,
+.btf-send-btn, .btf-quick-btn, .ibtn, .cbtn, .nbadge {
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1),
+              box-shadow 0.18s ease,
+              background 0.18s ease,
+              color 0.15s ease,
+              border-color 0.15s ease !important;
+}
+
+/* Primary action buttons — bigger lift + glow */
+.run-btn:hover, .cp-submit:hover, .btn-submit:hover, .convert-btn:hover {
+  transform: translateY(-3px) scale(1.025) !important;
+  box-shadow: 0 8px 28px rgba(47,129,247,0.45), 0 0 0 1px rgba(47,129,247,0.2) !important;
+}
+.run-btn:active, .cp-submit:active, .btn-submit:active { transform: scale(0.97) !important; }
+
+/* Nav items — slide-right reveal */
+.nav-item { position: relative; overflow: hidden; }
+.nav-item::after {
+  content: '';
+  position: absolute;
+  left: -100%; top: 0; bottom: 0;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, rgba(47,129,247,0.08), transparent);
+  transition: left 0.35s ease;
+}
+.nav-item:hover::after { left: 100%; }
+.nav-item:hover { transform: translateX(4px) !important; }
+.nav-item.active:hover { transform: none !important; }
+
+/* Tab buttons — underline slide */
+.tab:hover { transform: translateY(-1px) !important; }
+
+/* Filter chips / tags — subtle pop */
+.ftag:hover, .filter-chip:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+  box-shadow: 0 4px 14px rgba(47,129,247,0.25) !important;
+}
+.ftag.active, .filter-chip.active {
+  box-shadow: 0 3px 12px rgba(47,129,247,0.3) !important;
+}
+
+/* Small action buttons */
+.action-btn:hover, .eact-btn:hover, .add-skill-btn:hover,
+.topbar-btn:hover, .btf-quick-btn:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 4px 16px rgba(47,129,247,0.2) !important;
+}
+
+/* +/- counter buttons */
+.cbtn:hover, .ibtn:hover {
+  transform: scale(1.18) !important;
+  box-shadow: 0 2px 10px rgba(47,129,247,0.3) !important;
+}
+
+/* Send button in chatbot — glow */
+.btf-send-btn:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+  box-shadow: 0 6px 20px rgba(232,70,15,0.5) !important;
+}
+
+/* Cancel/reset buttons */
+.btn-cancel:hover, .cp-reset:hover {
+  transform: translateY(-1px) !important;
+}
+
+/* Topbar primary button */
+.topbar-btn.primary:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 6px 22px rgba(61,142,240,0.45) !important;
+}
+
+/* ── KPI / METRIC CARDS — animated entrance + hover lift ── */
+.mc, .kpi-card {
+  transition: transform 0.22s cubic-bezier(.34,1.56,.64,1),
+              box-shadow 0.22s ease,
+              border-color 0.22s ease !important;
+  animation: cardSlideUp 0.5s ease both;
+}
+.mc:hover, .kpi-card:hover {
+  transform: translateY(-5px) scale(1.015) !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.35), 0 0 0 1px rgba(47,129,247,0.18) !important;
+  border-color: rgba(47,129,247,0.35) !important;
+}
+.mc:nth-child(1), .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.mc:nth-child(2), .kpi-card:nth-child(2) { animation-delay: 0.12s; }
+.mc:nth-child(3), .kpi-card:nth-child(3) { animation-delay: 0.19s; }
+.mc:nth-child(4), .kpi-card:nth-child(4) { animation-delay: 0.26s; }
+
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── NUMBER COUNTER ANIMATION for metric values ── */
+.mc-val, .kpi-value, .estat-val {
+  animation: numPop 0.6s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes numPop {
+  0%   { opacity: 0; transform: scale(0.7); }
+  70%  { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ── BAR CHART ANIMATED FILL ── */
+.bar-fill {
+  width: 0 !important;
+  animation: barGrow 1.1s cubic-bezier(.4,0,.2,1) forwards;
+  animation-delay: 0.3s;
+}
+@keyframes barGrow {
+  from { width: 0 !important; }
+  to   { width: var(--bar-w, 100%) !important; }
+}
+
+/* ── CHART CARD HOVER ── */
+.ccrd, .card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+.ccrd:hover, .card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.28) !important;
+  border-color: rgba(47,129,247,0.25) !important;
+}
+
+/* ── EMOJI PROFESSIONAL ANIMATIONS ── */
+/* Floating bounce for status emojis */
+.ni, .eng-icon, .btf-header-icon,
+.cards-title-icon, .cp-section-icon {
+  transition: transform 0.22s cubic-bezier(.34,1.56,.64,1) !important;
+}
+.nav-item:hover .ni { transform: scale(1.3) rotate(-8deg) !important; }
+.eng-icon:hover { transform: scale(1.25) rotate(8deg) !important; }
+
+/* Animated pulse on live dot */
+.ldot, .live-dot {
+  animation: livePulse 1.4s ease-in-out infinite !important;
+  box-shadow: 0 0 0 0 rgba(63,185,80,0.6);
+}
+@keyframes livePulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(63,185,80,0.6); }
+  50%  { transform: scale(1.15); box-shadow: 0 0 0 5px rgba(63,185,80,0); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(63,185,80,0); }
+}
+
+/* Toast icon bounce */
+.toast.show span:first-child,
+#toast.show .toast-dot {
+  animation: iconBounce 0.5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes iconBounce {
+  from { transform: scale(0) rotate(-20deg); }
+  to   { transform: scale(1) rotate(0deg); }
+}
+
+/* AI pill shimmer */
+.ai-pill, .topbar-tag.ai {
+  position: relative;
+  overflow: hidden;
+}
+.ai-pill::after, .topbar-tag.ai::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; bottom: 0;
+  width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  animation: shimmer 2.8s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%   { left: -100%; }
+  60%  { left: 150%; }
+  100% { left: 150%; }
+}
+
+/* Match box reveal animation */
+.match-box.show {
+  animation: matchReveal 0.4s cubic-bezier(.34,1.56,.64,1) both !important;
+}
+@keyframes matchReveal {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Employee card hover - enhanced */
+.emp-card:hover {
+  transform: translateY(-6px) scale(1.01) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(47,129,247,0.4) !important;
+}
+
+/* Skill chip hover */
+.skill-chip:hover, .skill-tag:hover {
+  transform: scale(1.06) !important;
+  transition: transform 0.15s ease !important;
+}
+
+/* Bench table row hover */
+.bench-table-row:hover td, tr:hover td {
+  background: rgba(47,129,247,0.06) !important;
+  transition: background 0.15s ease !important;
+}
+
+/* Gig cards hover */
+.gig-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3) !important;
+  border-color: rgba(47,129,247,0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Report cards hover */
+.report-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.28) !important;
+  border-color: rgba(63,185,80,0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Upskill card hover */
+.course-card:hover {
+  transform: translateY(-4px) scale(1.005) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Email item hover */
+.email-item:hover {
+  background: rgba(47,129,247,0.07) !important;
+  padding-left: 20px !important;
+  transition: all 0.18s ease !important;
+}
+
+/* Priority option hover */
+.priority-opt:hover {
+  transform: scale(1.04) !important;
+  transition: all 0.18s cubic-bezier(.34,1.56,.64,1) !important;
+}
+
+/* ── SIDEBAR BRAND ICON ── */
+.brand-icon {
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1) !important;
+}
+.sb-brand:hover .brand-icon,
+.sidebar-brand:hover .brand-icon {
+  transform: rotate(12deg) scale(1.12) !important;
+}
+
+/* ── PAGE PANEL FADE IN ── */
+.panel.active, .page.active {
+  animation: pageFade 0.3s ease both;
+}
+@keyframes pageFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── FOCUS RING ANIMATION on inputs ── */
+.finput:focus, .fselect:focus, .ftextarea:focus, .form-input:focus {
+  animation: focusRing 0.25s ease forwards;
+}
+@keyframes focusRing {
+  from { box-shadow: 0 0 0 0 rgba(47,129,247,0.4); }
+  to   { box-shadow: 0 0 0 3px rgba(47,129,247,0.18); }
+}
+
+/* ── CHART.JS CANVAS — hover highlight ── */
+canvas { transition: filter 0.2s ease; }
+canvas:hover { filter: brightness(1.06); }
+
+
+/* Ripple keyframe */
+@keyframes rippleAnim {
+  to { transform: scale(1); opacity: 0; }
+}
+</style>
+<script>
+
+/* ═══════════════════════════════════════════════════
+   ANIMATION JS — BAR WIDTH BINDING + CHART.JS TWEAKS
+   ═══════════════════════════════════════════════════ */
+(function() {
+  // ── 1. Bind CSS variable --bar-w to each .bar-fill so barGrow keyframe works ──
+  function bindBarWidths() {
+    document.querySelectorAll('.bar-fill').forEach(el => {
+      const inlineW = el.style.width;
+      if (inlineW && inlineW !== '0%' && inlineW !== '0') {
+        el.style.setProperty('--bar-w', inlineW);
+        el.style.width = ''; // remove so animation starts from 0
+      }
+    });
+  }
+
+  // Run on load and after any tab switch (observe DOM changes)
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(bindBarWidths, 100);
+    const obs = new MutationObserver(() => setTimeout(bindBarWidths, 60));
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+  });
+
+  // ── 2. Enhance Chart.js defaults for animated entrance ──
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof Chart !== 'undefined') {
+      Chart.defaults.animation = {
+        duration: 1100,
+        easing: 'easeOutQuart',
+      };
+      Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(22,27,34,0.96)';
+      Chart.defaults.plugins.tooltip.borderColor = 'rgba(47,129,247,0.4)';
+      Chart.defaults.plugins.tooltip.borderWidth = 1;
+      Chart.defaults.plugins.tooltip.titleColor = '#e6edf3';
+      Chart.defaults.plugins.tooltip.bodyColor = '#8b949e';
+      Chart.defaults.plugins.tooltip.cornerRadius = 8;
+      Chart.defaults.plugins.tooltip.padding = 10;
+      Chart.defaults.plugins.tooltip.displayColors = true;
+      Chart.defaults.plugins.tooltip.boxPadding = 4;
+    }
+  });
+
+  // ── 3. Emoji float animation on metric card emojis ──
+  document.addEventListener('DOMContentLoaded', () => {
+    // Add float class to all emoji-containing metric icons
+    document.querySelectorAll('.mc-val, .kpi-value').forEach(el => {
+      el.style.display = 'inline-block';
+    });
+
+    // Stagger-in KPI numbers
+    document.querySelectorAll('.mc-val, .kpi-value, .estat-val').forEach((el, i) => {
+      el.style.animationDelay = (0.1 + i * 0.08) + 's';
+    });
+  });
+
+  // ── 4. Button ripple effect ──
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('button, .run-btn, .cp-submit, .btf-send-btn, .btn-submit, .convert-btn');
+    if (!btn) return;
+    // Skip if already has ripple
+    const existing = btn.querySelector('.btn-ripple-el');
+    if (existing) existing.remove();
+
+    const rect = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'btn-ripple-el';
+    const size = Math.max(rect.width, rect.height) * 2;
+    ripple.style.cssText = `
+      position:absolute;width:${size}px;height:${size}px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.15);
+      top:${e.clientY - rect.top - size/2}px;
+      left:${e.clientX - rect.left - size/2}px;
+      transform:scale(0);pointer-events:none;
+      animation:rippleAnim 0.55s ease forwards;
+    `;
+    btn.style.position = 'relative';
+    btn.style.overflow = 'hidden';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+
+  // ── 5. Observe panel changes and re-trigger card animations ──
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabButtons = document.querySelectorAll('.tab, .nav-item');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setTimeout(() => {
+          document.querySelectorAll('.panel.active .mc, .page.active .kpi-card').forEach((card, i) => {
+            card.style.animation = 'none';
+            card.offsetHeight; // reflow
+            card.style.animation = '';
+            card.style.animationDelay = (0.05 + i * 0.07) + 's';
+          });
+          bindBarWidths();
+        }, 50);
+      });
+    });
+  });
+})();
+
+</script>
+<!-- ═══ END ANIMATION LAYER ═══ -->
+
+</head>
+<body>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="brand-icon">&#9889;</div>
+      <div><div class="brand-name">Workforce AI</div><div class="brand-sub">Enterprise Platform</div></div>
+    </div>
+    <div class="nav-grp">Main Menu</div>
+    <button class="nav-item active" onclick="switchTab('project',this)"><span class="ni">&#9654;</span> Project Match</button>
+    <button class="nav-item" onclick="switchTab('email',this)"><span class="ni">&#9993;</span> Email Log <span class="nbadge nb-red" id="sb-badge">3</span></button>
+    <button class="nav-item" onclick="switchTab('create',this)"><span class="ni">&#43;</span> Create Project <span class="nbadge nb-green" id="sb-proj-count">4</span></button>
+    <button class="nav-item" onclick="switchTab('upskill',this)"><span class="ni">&#8679;</span> Upskilling</button>
+    <button class="nav-item" onclick="switchTab('bench',this)"><span class="ni">&#9201;</span> Bench Prediction</button>
+    <button class="nav-item" onclick="switchTab('trends',this)"><span class="ni">&#9650;</span> Skill Trends</button>
+    <button class="nav-item" onclick="switchTab('gig',this)"><span class="ni">&#9728;</span> Gig Market</button>
+    <div class="nav-grp">Analytics</div>
+    <button class="nav-item" onclick="switchTab('reports',this)"><span class="ni">&#9744;</span> Reports</button>
+    <button class="nav-item" onclick="switchTab('settings',this)"><span class="ni">&#9881;</span> Settings</button>
+    <div class="sb-spacer"></div>
+    <div class="sb-footer">
+      <div class="sys-live"><div class="ldot"></div> System live</div>
+      <div class="wm-row">
+        <div class="wm-av">WM</div>
+        <div><div class="wm-name">Workforce Manager</div><div class="wm-role">Admin &middot; Zensar</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="page-title">Project Match</div>
+        <div class="page-sub" id="page-sub">Match bench employees to open projects using AI</div>
+      </div>
+      <div class="topbar-right">
+        <div class="tbadge tbadge-green"><div class="ldot"></div> Live</div>
+        <div class="tbadge tbadge-blue">AI v2.4</div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <button class="tab active" id="tab-project" onclick="switchTab('project',null)">Project Match</button>
+      <button class="tab" id="tab-email" onclick="switchTab('email',null)">Email Log <span class="tab-badge tb-red" id="tab-badge">3</span></button>
+      <button class="tab" id="tab-create" onclick="switchTab('create',null)">&#43; Create Project <span class="tab-badge tb-blue" id="tab-proj-count">4</span></button>
+    </div>
+
+    <div class="content">
+
+      <!-- PROJECT MATCH PANEL -->
+      <div class="panel active" id="panel-project">
+        <div class="metrics">
+          <div class="mc mc-blue"><div class="mc-label">Total Employees</div><div class="mc-val">1,284</div><div class="mc-delta up">&#8593; 3.2% this quarter</div></div>
+          <div class="mc mc-red"><div class="mc-label">On Bench</div><div class="mc-val">187</div><div class="mc-delta dn">&#8595; 12 this week</div></div>
+          <div class="mc mc-green"><div class="mc-label">Active Projects</div><div class="mc-val" id="active-proj-count">64</div><div class="mc-delta up">&#8593; 5 new</div></div>
+          <div class="mc mc-warn"><div class="mc-label">Interns</div><div class="mc-val">93</div><div class="mc-delta up">&#8593; 18 onboarded</div></div>
+        </div>
+        <div class="mid">
+          <div class="engine">
+            <div class="eng-head">
+              <div class="eng-title"><div class="eng-icon">&#129302;</div> Staffing Engine</div>
+              <div class="ai-pill">AI-Powered</div>
+            </div>
+            <div class="flabel">Select Project</div>
+            <select class="fselect" id="proj" onchange="updateSkills()">
+              <option value="">&#8212; Choose a project &#8212;</option>
+              <option value="a">Zensar Banking Modernization</option>
+              <option value="b">Retail Cloud Migration</option>
+              <option value="c">Healthcare AI Platform</option>
+              <option value="d">FinTech API Gateway</option>
+            </select>
+            <div style="margin-top:14px">
+              <div class="flabel">Required Skills</div>
+              <input class="finput" id="skills-inp" readonly placeholder="Select a project above" style="background:rgba(13,17,23,0.4);color:var(--muted)"/>
+            </div>
+            <div class="frow2">
+              <div><div class="flabel">Min. Experience (yrs)</div><input class="finput" id="min-exp" type="number" value="3" min="0" max="20"/></div>
+              <div><div class="flabel">No. of Employees</div>
+                <div class="counter"><button class="cbtn" onclick="chgE(-1)">&#8722;</button><div class="cval" id="ec">5</div><button class="cbtn" onclick="chgE(1)">&#43;</button></div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="intern">
+              <div>
+                <div class="int-title">Intern Allocation <span class="smart-pill">&#10022; Smart Suggestion</span></div>
+                <div class="int-sub">AI-recommended based on task complexity &amp; cost optimization</div>
+              </div>
+              <div class="int-ctrl">
+                <button class="ibtn" onclick="chgI(-1)">&#8722;</button>
+                <div class="ival" id="ic">2</div>
+                <button class="ibtn" onclick="chgI(1)">&#43;</button>
+              </div>
+            </div>
+            <button class="run-btn" id="rbtn" onclick="runMatch()">
+              <div class="spin" id="spin"></div>
+              <span id="rlabel">&#128640; Run AI Match</span>
+            </button>
+            <div class="match-box" id="mbox">
+              <div class="mtitle">&#10003; Match Complete &#8212; Top Candidates Found</div>
+              <div id="mrows"></div>
+            </div>
+          </div>
+          <div class="chart-col">
+            <div class="ccrd">
+              <div class="chart-label"><div class="cldot" style="background:var(--primary)"></div> Skills vs. Availability</div>
+              <div class="bar-leg">
+                <div class="bl"><div class="blsq" style="background:rgba(47,129,247,0.8)"></div> Skilled</div>
+                <div class="bl"><div class="blsq" style="background:rgba(63,185,80,0.75)"></div> Available</div>
+              </div>
+              <div style="position:relative;height:190px;width:100%"><canvas id="barC"></canvas></div>
+            </div>
+            <div class="ccrd">
+              <div class="chart-label"><div class="cldot" style="background:var(--danger)"></div> Bench Status</div>
+              <div style="position:relative;height:150px;width:100%"><canvas id="pieC"></canvas></div>
+              <div class="pie-leg" id="pleg"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMPLOYEE CARDS SECTION -->
+        <div id="employee-cards-section" style="display:none"></div>
+      </div>
+
+      <!-- EMAIL LOG PANEL -->
+      <div class="panel" id="panel-email">
+        <div class="email-stats">
+          <div class="estat"><div class="estat-val" style="color:var(--primary)">24</div><div class="estat-label">Total Sent</div></div>
+          <div class="estat"><div class="estat-val" style="color:var(--danger)" id="unread-stat">3</div><div class="estat-label">Unread</div></div>
+          <div class="estat"><div class="estat-val" style="color:var(--warn)">2</div><div class="estat-label">Pending</div></div>
+          <div class="estat"><div class="estat-val" style="color:var(--accent)">19</div><div class="estat-label">Delivered</div></div>
+        </div>
+        <div class="email-layout">
+          <div class="inbox-card">
+            <div class="inbox-header">
+              <div class="inbox-title">Inbox</div>
+              <div style="display:flex;gap:6px">
+                <button class="ftag active" onclick="filterEmails('all',this)">All</button>
+                <button class="ftag" onclick="filterEmails('unread',this)">Unread</button>
+                <button class="ftag" onclick="filterEmails('auto',this)">Auto</button>
+              </div>
+            </div>
+            <div id="email-list"></div>
+          </div>
+          <div class="email-detail" id="email-detail">
+            <div class="ed-empty">
+              <div style="font-size:32px;opacity:.4">&#9993;</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text2)">Select an email to read</div>
+              <div style="font-size:12px">Click any message from the inbox</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREATE PROJECT PANEL -->
+      <div class="panel" id="panel-create">
+        <div class="cp-layout">
+          <div class="cp-form-card">
+            <div class="cp-section">
+              <div class="cp-section-title"><div class="cp-section-icon">&#128196;</div> Basic Information</div>
+              <div style="margin-bottom:14px">
+                <div class="flabel">Project Name <span class="required-star">*</span></div>
+                <input class="finput" id="cp-name" placeholder="e.g. Zensar Digital Transformation Q3"/>
+                <div class="field-error" id="err-name">Project name is required</div>
+              </div>
+              <div style="margin-bottom:14px">
+                <div class="flabel">Project Description <span class="required-star">*</span></div>
+                <textarea class="ftextarea" id="cp-desc" placeholder="Describe the project scope, goals, and expected outcomes..."></textarea>
+                <div class="field-error" id="err-desc">Description is required</div>
+              </div>
+              <div class="frow2">
+                <div>
+                  <div class="flabel">Client / Department <span class="required-star">*</span></div>
+                  <input class="finput" id="cp-client" placeholder="e.g. HDFC Bank, Internal IT"/>
+                  <div class="field-error" id="err-client">Client is required</div>
+                </div>
+                <div>
+                  <div class="flabel">Project Manager</div>
+                  <input class="finput" id="cp-pm" placeholder="e.g. Rahul Sharma"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="cp-section">
+              <div class="cp-section-title"><div class="cp-section-icon">&#128197;</div> Timeline &amp; Priority</div>
+              <div class="frow3" style="margin-bottom:14px">
+                <div>
+                  <div class="flabel">Start Date <span class="required-star">*</span></div>
+                  <input class="finput" id="cp-start" type="date"/>
+                  <div class="field-error" id="err-start">Start date required</div>
+                </div>
+                <div>
+                  <div class="flabel">End Date <span class="required-star">*</span></div>
+                  <input class="finput" id="cp-end" type="date"/>
+                  <div class="field-error" id="err-end">End date required</div>
+                </div>
+                <div>
+                  <div class="flabel">Budget (INR)</div>
+                  <input class="finput" id="cp-budget" type="number" placeholder="e.g. 5000000"/>
+                </div>
+              </div>
+              <div>
+                <div class="flabel">Priority Level <span class="required-star">*</span></div>
+                <div class="priority-grid" style="margin-top:8px">
+                  <div class="priority-opt" id="prio-high" onclick="setPriority('high')"><div style="font-size:18px">&#128308;</div><div class="po-label po-high">High</div></div>
+                  <div class="priority-opt selected-med" id="prio-med" onclick="setPriority('med')"><div style="font-size:18px">&#128992;</div><div class="po-label po-med">Medium</div></div>
+                  <div class="priority-opt" id="prio-low" onclick="setPriority('low')"><div style="font-size:18px">&#128994;</div><div class="po-label po-low">Low</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cp-section">
+              <div class="cp-section-title"><div class="cp-section-icon">&#128101;</div> Team Requirements</div>
+              <div class="frow3" style="margin-bottom:14px">
+                <div>
+                  <div class="flabel">Team Size <span class="required-star">*</span></div>
+                  <div class="counter"><button class="cbtn" onclick="chgTeam(-1)">&#8722;</button><div class="cval" id="team-size">5</div><button class="cbtn" onclick="chgTeam(1)">&#43;</button></div>
+                </div>
+                <div>
+                  <div class="flabel">Min. Experience (yrs)</div>
+                  <input class="finput" id="cp-exp" type="number" value="2" min="0" max="20"/>
+                </div>
+                <div>
+                  <div class="flabel">Interns Needed</div>
+                  <div class="counter"><button class="cbtn" onclick="chgCpIntern(-1)">&#8722;</button><div class="cval" id="cp-intern-count">1</div><button class="cbtn" onclick="chgCpIntern(1)">&#43;</button></div>
+                </div>
+              </div>
+              <div style="margin-bottom:14px">
+                <div class="flabel">Department / Domain</div>
+                <select class="fselect" id="cp-domain">
+                  <option value="">Select domain...</option>
+                  <option>Banking &amp; Finance</option>
+                  <option>Healthcare &amp; Life Sciences</option>
+                  <option>Retail &amp; E-commerce</option>
+                  <option>Cloud &amp; Infrastructure</option>
+                  <option>AI &amp; Machine Learning</option>
+                  <option>Digital Transformation</option>
+                  <option>Cybersecurity</option>
+                </select>
+              </div>
+              <div>
+                <div class="flabel">Required Skills <span class="required-star">*</span></div>
+                <div class="skill-input-wrap">
+                  <input class="finput" id="skill-input" placeholder="Type a skill and press Add..." onkeydown="if(event.key==='Enter')addSkill()"/>
+                  <button class="add-skill-btn" onclick="addSkill()">&#43; Add</button>
+                </div>
+                <div class="skills-tags" id="skills-tags">
+                  <span class="skill-chip">Java <span class="chip-remove" onclick="removeSkill(this)">&#215;</span></span>
+                  <span class="skill-chip">Spring Boot <span class="chip-remove" onclick="removeSkill(this)">&#215;</span></span>
+                </div>
+                <div class="field-error" id="err-skills">At least one skill is required</div>
+              </div>
+            </div>
+
+            <div class="cp-section" style="margin-bottom:0">
+              <div class="cp-section-title"><div class="cp-section-icon">&#128203;</div> Additional Notes</div>
+              <textarea class="ftextarea" id="cp-notes" placeholder="Any special requirements, constraints, or notes for the staffing team..."></textarea>
+            </div>
+
+            <div class="divider"></div>
+            <div class="cp-submit-row">
+              <button class="cp-reset" onclick="resetForm()">&#8635; Reset</button>
+              <button class="cp-submit" onclick="submitProject()">&#10003; Create Project</button>
+            </div>
+          </div>
+
+          <div class="cp-sidebar">
+            <div class="cp-list-card">
+              <div class="cp-list-header">
+                <div class="cp-list-title">Created Projects</div>
+                <div class="proj-count" id="proj-count-badge">4 projects</div>
+              </div>
+              <div id="proj-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPSKILLING PANEL -->
+      <div class="panel" id="panel-upskill">
+        <div class="metrics">
+          <div class="mc mc-blue"><div class="mc-label">Active Courses</div><div class="mc-val">12</div><div class="mc-delta up">&#8593; 3 new</div></div>
+          <div class="mc mc-green"><div class="mc-label">Enrolled</div><div class="mc-val">234</div><div class="mc-delta up">&#8593; 18 this week</div></div>
+          <div class="mc mc-warn"><div class="mc-label">Completions</div><div class="mc-val">87</div><div class="mc-delta up">&#8593; 12 this month</div></div>
+          <div class="mc mc-red"><div class="mc-label">Certifications</div><div class="mc-val">41</div><div class="mc-delta up">&#8593; 5 new</div></div>
+        </div>
+        <div class="up-grid" id="up-grid"></div>
+      </div>
+
+      <!-- BENCH PREDICTION PANEL -->
+      <div class="panel" id="panel-bench">
+        <div class="metrics">
+          <div class="mc mc-red"><div class="mc-label">High Risk</div><div class="mc-val">23</div><div class="mc-delta dn">&#8595; 2 resolved</div></div>
+          <div class="mc mc-warn"><div class="mc-label">Medium Risk</div><div class="mc-val">41</div><div class="mc-delta up">&#8593; 5 flagged</div></div>
+          <div class="mc mc-green"><div class="mc-label">Low Risk</div><div class="mc-val">123</div><div class="mc-delta up">&#8593; stable</div></div>
+          <div class="mc mc-blue"><div class="mc-label">Avg Bench Days</div><div class="mc-val">18</div><div class="mc-delta dn">&#8595; 3 days</div></div>
+        </div>
+        <div class="bench-table">
+          <div class="bench-table-header"><span>Employee</span><span>Skills</span><span>Days Idle</span><span>Risk</span><span>Utilization</span><span>Action</span></div>
+          <div id="bench-rows"></div>
+        </div>
+      </div>
+
+      <!-- SKILL TRENDS PANEL -->
+      <div class="panel" id="panel-trends">
+        <div class="trends-grid" id="trends-grid"></div>
+      </div>
+
+      <!-- GIG MARKET PANEL -->
+      <div class="panel" id="panel-gig">
+        <div class="metrics">
+          <div class="mc mc-blue"><div class="mc-label">Open Gigs</div><div class="mc-val">38</div><div class="mc-delta up">&#8593; 6 new</div></div>
+          <div class="mc mc-green"><div class="mc-label">Placed</div><div class="mc-val">14</div><div class="mc-delta up">&#8593; 3 this week</div></div>
+          <div class="mc mc-warn"><div class="mc-label">Avg Rate/Day</div><div class="mc-val">₹4.2K</div><div class="mc-delta up">&#8593; 8%</div></div>
+          <div class="mc mc-red"><div class="mc-label">Expiring Soon</div><div class="mc-val">5</div><div class="mc-delta dn">Act now</div></div>
+        </div>
+        <div class="gig-grid" id="gig-grid"></div>
+      </div>
+
+      <!-- REPORTS PANEL -->
+      <div class="panel" id="panel-reports">
+        <div class="reports-grid" id="reports-grid"></div>
+      </div>
+
+      <!-- SETTINGS PANEL -->
+      <div class="panel" id="panel-settings">
+        <div class="settings-layout">
+          <div class="settings-nav" id="settings-nav"></div>
+          <div class="settings-panel-card" id="settings-content"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EMPLOYEE DETAIL MODAL -->
+<div class="modal-overlay" id="emp-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="emp-modal-content"></div>
+</div>
+
+<div class="toast" id="toast">
+  <span style="font-size:16px">&#10003;</span>
+  <span id="toast-msg">Project created successfully!</span>
+</div>
+
+<script>
+// ─── PAGE DATA ───────────────────────────────────────────────────────────────
+const PAGES={
+  project:{title:'Project Match',sub:'Match bench employees to open projects using AI'},
+  email:{title:'Email Log',sub:'Automated notifications and candidate communications'},
+  create:{title:'Create Project',sub:'Define a new project and configure staffing requirements'},
+  upskill:{title:'Upskilling',sub:'Manage learning paths and course enrollments'},
+  bench:{title:'Bench Prediction',sub:'AI-powered bench risk analysis and forecasting'},
+  trends:{title:'Skill Trends',sub:'Market demand and internal skill gap analysis'},
+  gig:{title:'Gig Market',sub:'External and internal gig opportunities for bench employees'},
+  reports:{title:'Reports',sub:'Generate and download workforce analytics reports'},
+  settings:{title:'Settings',sub:'Configure platform preferences and integrations'},
+};
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+function switchTab(tab,navEl){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const panel=document.getElementById('panel-'+tab);
+  if(panel)panel.classList.add('active');
+  const tabEl=document.getElementById('tab-'+tab);
+  if(tabEl)tabEl.classList.add('active');
+  document.getElementById('page-title').textContent=PAGES[tab]?.title||tab;
+  document.getElementById('page-sub').textContent=PAGES[tab]?.sub||'';
+  if(navEl)navEl.classList.add('active');
+  // init sub-panels
+  if(tab==='email')renderEmailList('all');
+  if(tab==='create')renderProjectList();
+  if(tab==='upskill')renderUpskilling();
+  if(tab==='bench')renderBench();
+  if(tab==='trends')renderTrends();
+  if(tab==='gig')renderGig();
+  if(tab==='reports')renderReports();
+  if(tab==='settings')renderSettings();
+}
+
+// ─── STAFFING ENGINE ─────────────────────────────────────────────────────────
+const SM={a:'Java, Spring Boot, Oracle DB, Microservices',b:'AWS, Python, Terraform, Docker',c:'ML/AI, Python, FHIR, Azure',d:'Node.js, REST APIs, Kafka, PostgreSQL'};
+const PROJECT_NAMES={a:'Zensar Banking Modernization',b:'Retail Cloud Migration',c:'Healthcare AI Platform',d:'FinTech API Gateway'};
+const PROJECT_DOMAINS={a:'Banking & Finance',b:'Cloud & Infrastructure',c:'Healthcare & Life Sciences',d:'Banking & Finance'};
+
+function updateSkills(){
+  const v=document.getElementById('proj').value;
+  const el=document.getElementById('skills-inp');
+  el.value=v?SM[v]:'';el.style.color=v?'var(--text2)':'var(--muted)';
+}
+let ec=5,ic=2;
+function chgE(d){ec=Math.max(1,Math.min(50,ec+d));document.getElementById('ec').textContent=ec}
+function chgI(d){ic=Math.max(0,Math.min(20,ic+d));document.getElementById('ic').textContent=ic}
+
+async function runMatch(){
+  const p=document.getElementById('proj').value;
+  if(!p){showToast('Please select a project first.');return;}
+  const minExp=parseInt(document.getElementById('min-exp').value)||3;
+  const btn=document.getElementById('rbtn'),sp=document.getElementById('spin'),lb=document.getElementById('rlabel'),mb=document.getElementById('mbox');
+  const cardsSection=document.getElementById('employee-cards-section');
+
+  btn.disabled=true;sp.style.display='block';lb.textContent='Running AI Match...';mb.classList.remove('show');
+  cardsSection.style.display='block';
+  cardsSection.innerHTML=`<div class="cards-loading"><div class="cards-loading-spinner"></div><div class="cards-loading-text">AI is finding the best matches...</div><div class="cards-loading-sub">Analyzing skills, experience, bench duration and project requirements</div></div>`;
+
+  try {
+    const projectName=PROJECT_NAMES[p];
+    const skills=SM[p];
+    const domain=PROJECT_DOMAINS[p];
+
+    const response = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:1000,
+        messages:[{
+          role:"user",
+          content:`You are a workforce AI for Zensar Technologies, an IT services company in India. Generate ${ec} realistic bench employee profiles to be matched for the project "${projectName}" (Domain: ${domain}, Required Skills: ${skills}, Min Experience: ${minExp} years).
+Also include ${ic} intern profiles with intern:true.
+Return ONLY valid JSON array, no markdown, no explanation.
+Each employee object must have:
+- name (Indian name)
+- initials (2 chars)
+- role (job title)
+- experience (years as number)
+- benchDays (number, 5-45)
+- matchScore (number 60-98, higher for employees with matching skills)
+- skills (array of 3-5 skill strings, must partially overlap with: ${skills})
+- location (Indian city)
+- email (realistic zensar.com email)
+- intern (boolean)
+- reason (1-2 sentence explanation of why this person is a good match)
+- avatarColor (one of: #2563eb, #7c3aed, #d97706, #059669, #0891b2, #dc2626, #9333ea, #0d9488)
+Ensure matchScore is higher for people with more matching skills. Interns have 0-1 years experience.`
+        }]
+      })
+    });
+    const data=await response.json();
+    const txt=data.content.map(i=>i.text||'').join('');
+    const clean=txt.replace(/```json|```/g,'').trim();
+    const employees=JSON.parse(clean);
+
+    // Show summary box
+    const empCount=employees.filter(e=>!e.intern).length;
+    const intCount=employees.filter(e=>e.intern).length;
+    const avgScore=(employees.reduce((s,e)=>s+e.matchScore,0)/employees.length).toFixed(1);
+    const rows=[['Matched Employees',`${empCount} profiles`],['Interns Suggested',`${intCount} interns`],['Avg. Match Score',`${avgScore}%`],['Est. Onboarding','3–5 days'],['Cost Efficiency','+18% saved']];
+    document.getElementById('mrows').innerHTML=rows.map(([k,v])=>`<div class="mrow"><span>${k}</span><span>${v}</span></div>`).join('');
+    mb.classList.add('show');
+
+    renderEmployeeCards(employees, projectName, skills.split(', '));
+  } catch(err){
+    cardsSection.innerHTML=`<div class="cards-loading"><div style="font-size:24px">&#9888;</div><div class="cards-loading-text" style="color:var(--danger)">Match failed — ${err.message}</div></div>`;
+  }
+
+  sp.style.display='none';lb.innerHTML='&#128640; Run AI Match';btn.disabled=false;
+}
+
+function renderEmployeeCards(employees, projectName, requiredSkills){
+  const section=document.getElementById('employee-cards-section');
+  const reqSkillsLower=requiredSkills.map(s=>s.toLowerCase().trim());
+
+  const matchClass=score=>score>=85?'match-high':score>=70?'match-med':'match-low';
+  const benchBarClass=days=>days<=14?'bench-risk-low':days<=30?'bench-risk-med':'bench-risk-high';
+  const benchBarWidth=days=>Math.min(100,(days/45)*100);
+
+  section.innerHTML=`
+    <div class="cards-header">
+      <div class="cards-title"><div class="cards-title-icon">&#128101;</div> Matched Employees &mdash; ${projectName}<span class="cards-count">${employees.length} candidates</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="ftag active" id="filter-all" onclick="filterCards('all',this)">All (${employees.length})</button>
+        <button class="ftag" id="filter-emp" onclick="filterCards('emp',this)">Employees (${employees.filter(e=>!e.intern).length})</button>
+        <button class="ftag" id="filter-intern" onclick="filterCards('intern',this)">Interns (${employees.filter(e=>e.intern).length})</button>
+      </div>
+    </div>
+    <div class="cards-grid" id="cards-grid">
+      ${employees.map((e,i)=>buildCard(e,requiredSkills,matchClass,benchBarClass,benchBarWidth,i)).join('')}
+    </div>`;
+
+  // store employees globally for filter/modal
+  window._matchedEmployees=employees;
+  window._matchReqSkills=requiredSkills;
+  window._matchClass=matchClass;
+  window._benchBarClass=benchBarClass;
+  window._benchBarWidth=benchBarWidth;
+}
+
+function buildCard(e,requiredSkills,matchClass,benchBarClass,benchBarWidth,i){
+  const reqLower=requiredSkills.map(s=>s.toLowerCase().trim());
+  return `<div class="emp-card${e.intern?' intern-card':''}" style="animation-delay:${i*0.06}s" onclick="openEmpModal(${i})">
+    <div class="emp-card-top">
+      <div class="emp-avatar" style="background:${e.avatarColor}">${e.initials}</div>
+      <div class="emp-match-badge ${matchClass(e.matchScore)}">${e.matchScore}% match</div>
+    </div>
+    ${e.intern?'<div class="emp-intern-badge">&#127891; Intern</div>':''}
+    <div class="emp-name">${e.name}</div>
+    <div class="emp-role">${e.role} &bull; ${e.location}</div>
+    <div class="emp-stats">
+      <div class="emp-stat"><div class="emp-stat-val">${e.intern?'Fresher':e.experience+' yrs'}</div><div class="emp-stat-label">Experience</div></div>
+      <div class="emp-stat"><div class="emp-stat-val">${e.benchDays}d</div><div class="emp-stat-label">On Bench</div></div>
+    </div>
+    <div class="emp-skills">
+      ${e.skills.slice(0,4).map(s=>`<span class="emp-skill-tag${reqLower.some(r=>s.toLowerCase().includes(r)||r.includes(s.toLowerCase()))?' match':''}">${s}</span>`).join('')}
+      ${e.skills.length>4?`<span class="emp-skill-tag">+${e.skills.length-4}</span>`:''}
+    </div>
+    <div class="emp-bench-bar">
+      <div class="bench-bar-label"><span>Bench duration</span><span>${e.benchDays} days</span></div>
+      <div class="bench-bar-track"><div class="bench-bar-fill ${benchBarClass(e.benchDays)}" style="width:${benchBarWidth(e.benchDays)}%"></div></div>
+    </div>
+    <div class="emp-card-footer">
+      <button class="emp-action-btn emp-btn-primary" onclick="event.stopPropagation();assignEmployee(${JSON.stringify(e.name).replace(/"/g,'&quot;')})">&#10003; Assign</button>
+      <button class="emp-action-btn emp-btn-ghost" onclick="event.stopPropagation();openEmpModal(${window._matchedEmployees?window._matchedEmployees.indexOf(e):0})">View Profile</button>
+    </div>
+  </div>`;
+}
+
+function filterCards(type, el){
+  document.querySelectorAll('#employee-cards-section .ftag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const emps=window._matchedEmployees||[];
+  const filtered=type==='all'?emps:type==='emp'?emps.filter(e=>!e.intern):emps.filter(e=>e.intern);
+  const grid=document.getElementById('cards-grid');
+  if(grid) grid.innerHTML=filtered.map((e,i)=>buildCard(e,window._matchReqSkills||[],window._matchClass,window._benchBarClass,window._benchBarWidth,i)).join('');
+}
+
+function openEmpModal(idx){
+  const e=(window._matchedEmployees||[])[idx];
+  if(!e)return;
+  const reqLower=(window._matchReqSkills||[]).map(s=>s.toLowerCase().trim());
+  const mc=window._matchClass||((s)=>s>=85?'match-high':s>=70?'match-med':'match-low');
+  const modal=document.getElementById('emp-modal-content');
+  modal.innerHTML=`
+    <button class="modal-close" onclick="closeModal()">&#215;</button>
+    <div class="modal-emp-header">
+      <div class="modal-avatar" style="background:${e.avatarColor}">${e.initials}</div>
+      <div>
+        <div class="modal-emp-name">${e.name}</div>
+        <div class="modal-emp-role">${e.role}</div>
+        <div class="emp-match-badge ${mc(e.matchScore)}" style="display:inline-flex">${e.matchScore}% Match Score</div>
+        ${e.intern?'<span class="emp-intern-badge" style="margin-left:8px">&#127891; Intern</span>':''}
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">&#128196; Details</div>
+      <div class="modal-kv">
+        <div class="modal-kv-item"><div class="modal-kv-val">${e.intern?'Fresher':e.experience+' years'}</div><div class="modal-kv-label">Experience</div></div>
+        <div class="modal-kv-item"><div class="modal-kv-val">${e.benchDays} days</div><div class="modal-kv-label">On Bench</div></div>
+        <div class="modal-kv-item"><div class="modal-kv-val">${e.location}</div><div class="modal-kv-label">Location</div></div>
+        <div class="modal-kv-item"><div class="modal-kv-val" style="font-size:11px">${e.email}</div><div class="modal-kv-label">Email</div></div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">&#128297; Skills</div>
+      <div class="modal-skills-wrap">${e.skills.map(s=>`<span class="modal-skill${reqLower.some(r=>s.toLowerCase().includes(r)||r.includes(s.toLowerCase()))?' match':''}">${s}</span>`).join('')}</div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">&#129302; Why This Match</div>
+      <div class="modal-reason">${e.reason}</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-primary" onclick="assignEmployee('${e.name}');closeModal()">&#10003; Assign to Project</button>
+      <button class="modal-btn modal-btn-warn" onclick="closeModal();showToast('Email sent to ${e.name}')">&#9993; Send Email</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal()">Close</button>
+    </div>`;
+  document.getElementById('emp-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('emp-modal').classList.remove('open')}
+function assignEmployee(name){showToast(`${name} assigned to project successfully!`)}
+
+// ─── CHARTS ───────────────────────────────────────────────────────────────────
+new Chart(document.getElementById('barC'),{type:'bar',data:{labels:['Java','Python','AWS','React','ML/AI','DevOps'],datasets:[{label:'Skilled',data:[210,175,142,118,95,130],backgroundColor:'rgba(47,129,247,0.8)',borderRadius:4,barThickness:10},{label:'Available',data:[80,65,50,45,30,55],backgroundColor:'rgba(63,185,80,0.75)',borderRadius:4,barThickness:10}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1c2128',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#8b949e'}},scales:{x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'rgba(48,54,61,0.4)',lineWidth:0.5}},y:{ticks:{color:'#8b949e',font:{size:10},maxTicksLimit:5},grid:{color:'rgba(48,54,61,0.4)',lineWidth:0.5},min:0,max:300}}}});
+const PD=[{l:'On Project',v:68,c:'#2f81f7'},{l:'On Bench',v:15,c:'#f78166'},{l:'Training',v:10,c:'#d29922'},{l:'Interns',v:7,c:'#3fb950'}];
+new Chart(document.getElementById('pieC'),{type:'doughnut',data:{labels:PD.map(d=>d.l),datasets:[{data:PD.map(d=>d.v),backgroundColor:PD.map(d=>d.c),borderColor:'#161b22',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1c2128',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#8b949e',callbacks:{label:ctx=>` ${ctx.parsed}%`}}}}});
+document.getElementById('pleg').innerHTML=PD.map(d=>`<div class="prow"><div class="psq" style="background:${d.c}"></div>${d.l}<span style="margin-left:auto;color:var(--text2);font-weight:600">${d.v}%</span></div>`).join('');
+
+// ─── EMAIL ───────────────────────────────────────────────────────────────────
+const EMAILS=[
+  {id:1,name:'Vikram S.',email:'vikram.s@zensar.com',avatar:'VS',color:'#2563eb',subject:'Project Assignment — Banking Modernization',preview:'I have been notified about my assignment to the Banking Modernization project...',body:`Hi Workforce Team,\n\nI received the notification about my assignment to the Banking Modernization project. I wanted to confirm my availability and ask about the onboarding timeline.\n\nCould you please share the project kickoff details and the team lead's contact? I am ready to start immediately.\n\nBest regards,\nVikram S.\nDevOps Engineer`,time:'10:32 am',tags:['eb-auto','eb-sent'],tagLabels:['Auto-matched','Sent'],unread:true},
+  {id:2,name:'AI Scheduler',email:'ai@workforce.ai',avatar:'AI',color:'#7c3aed',subject:'Bench Risk Alert — 3 Employees Idle 20+ Days',preview:'Automated alert: Vikram S., Kiran R., Meena T. have exceeded bench threshold...',body:`Automated Bench Risk Alert\n━━━━━━━━━━━━━━━━━━━━━━━\nTriggered: Today at 09:00 AM\n\nThe following employees have exceeded the 20-day bench threshold:\n\n• Vikram S. — DevOps Engineer — 30 days idle — Risk: HIGH\n• Kiran R.  — Data Scientist  — 24 days idle — Risk: HIGH\n• Meena T.  — QA Engineer     — 20 days idle — Risk: HIGH\n\nRecommended Action:\nRun AI Match for the Healthcare AI Platform or FinTech API Gateway projects.\n\nThis is an automated message from Workforce AI.`,time:'09:00 am',tags:['eb-auto','eb-failed'],tagLabels:['Auto-alert','Action needed'],unread:true},
+  {id:3,name:'Kiran R.',email:'kiran.r@zensar.com',avatar:'KR',color:'#d97706',subject:'Re: Upskilling Program — Python ML Track',preview:'Thank you for enrolling me in the ML upskilling track. I completed Module 1...',body:`Hi,\n\nThank you for enrolling me in the Python ML upskilling track. I have completed Module 1 and am progressing well.\n\nI am also interested in the Healthcare AI Platform project.\n\nRegards,\nKiran R.\nData Scientist`,time:'Yesterday',tags:['eb-pending'],tagLabels:['Pending reply'],unread:true},
+  {id:4,name:'HR System',email:'hr@zensar.com',avatar:'HR',color:'#059669',subject:'Intern Onboarding Complete — 18 New Joiners',preview:'18 interns have completed onboarding and are ready for assignment...',body:`HR System Notification\n━━━━━━━━━━━━━━━━━━━━━━━\n\n18 new interns have successfully completed onboarding.\n\nSkill Distribution:\n• Java / Spring Boot — 6 interns\n• Python / ML — 5 interns\n• Cloud / DevOps — 4 interns\n• QA / Testing — 3 interns`,time:'Yesterday',tags:['eb-sent'],tagLabels:['Delivered'],unread:false},
+  {id:5,name:'Meena T.',email:'meena.t@zensar.com',avatar:'MT',color:'#0891b2',subject:'Query: Bench Status and Next Steps',preview:'I wanted to check on my bench status and what projects are coming up...',body:`Hello,\n\nI have been on the bench for 20 days and wanted to check in about upcoming opportunities.\n\nI have experience in QA automation, Selenium, and API testing.\n\nThank you,\nMeena T.\nQA Engineer`,time:'2 days ago',tags:['eb-pending'],tagLabels:['Awaiting response'],unread:false},
+  {id:6,name:'AI Matcher',email:'matcher@workforce.ai',avatar:'AM',color:'#4f46e5',subject:'Match Report — Retail Cloud Migration (4 Candidates)',preview:'AI matching complete. 4 candidates identified for Retail Cloud Migration...',body:`AI Match Report\n━━━━━━━━━━━━━━━━━━━━━━━\nProject: Retail Cloud Migration\n\n1. Kiran R.  — 94% match — Python, AWS\n2. Deepa K.  — 88% match — Python, Terraform\n3. Meena T.  — 72% match — AWS\n4. Arjun M.  — 65% match — Cloud fundamentals\n\nIntern Suggestion: 2 interns recommended.`,time:'2 days ago',tags:['eb-auto','eb-sent'],tagLabels:['Auto-report','Sent'],unread:false},
+];
+let selectedEmail=null,currentFilter='all';
+function renderEmailList(filter){
+  const list=document.getElementById('email-list');
+  const filtered=filter==='all'?EMAILS:filter==='unread'?EMAILS.filter(e=>e.unread):EMAILS.filter(e=>e.tags.includes('eb-auto'));
+  list.innerHTML=filtered.map(e=>`
+    <div class="email-item${e.unread?' unread':''}${selectedEmail===e.id?' selected':''}" onclick="openEmail(${e.id})">
+      ${e.unread?'<div class="unread-dot"></div>':'<div style="width:7px;flex-shrink:0"></div>'}
+      <div class="ei-avatar" style="background:${e.color}">${e.avatar}</div>
+      <div class="ei-body">
+        <div class="ei-top"><span class="ei-name">${e.name}</span><span class="ei-time">${e.time}</span></div>
+        <div class="ei-subject">${e.subject}</div>
+        <div class="ei-preview">${e.preview}</div>
+        <div class="ei-badges">${e.tags.map((t,i)=>`<span class="ebadge ${t}">${e.tagLabels[i]}</span>`).join('')}</div>
+      </div>
+    </div>`).join('');
+}
+function openEmail(id){
+  selectedEmail=id;
+  const e=EMAILS.find(x=>x.id===id);e.unread=false;
+  renderEmailList(currentFilter);
+  const unread=EMAILS.filter(x=>x.unread).length;
+  document.getElementById('tab-badge').textContent=unread;
+  document.getElementById('sb-badge').textContent=unread;
+  document.getElementById('unread-stat').textContent=unread;
+  document.getElementById('email-detail').innerHTML=`
+    <div class="ed-header">
+      <div class="ed-subject">${e.subject}</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="ed-av" style="background:${e.color}">${e.avatar}</div>
+          <div><div class="ed-fname">${e.name}</div><div class="ed-femail">${e.email}</div></div>
+        </div>
+        <div style="margin-left:auto;font-size:11px;color:var(--muted)">${e.time}</div>
+      </div>
+      <div class="ed-tags">${e.tags.map((t,i)=>`<span class="ebadge ${t}">${e.tagLabels[i]}</span>`).join('')}</div>
+    </div>
+    <div class="ed-body">${e.body}</div>
+    <div class="ed-actions">
+      <button class="eact-btn primary" onclick="showToast('Reply sent to ${e.name}')">&#8617; Reply</button>
+      <button class="eact-btn" onclick="showToast('Email forwarded')">&#8618; Forward</button>
+      <button class="eact-btn" onclick="markUnread(${e.id})">&#128065; Mark Unread</button>
+    </div>`;
+}
+function markUnread(id){
+  const e=EMAILS.find(x=>x.id===id);e.unread=true;
+  renderEmailList(currentFilter);
+  const unread=EMAILS.filter(x=>x.unread).length;
+  document.getElementById('tab-badge').textContent=unread;
+  document.getElementById('sb-badge').textContent=unread;
+  document.getElementById('unread-stat').textContent=unread;
+  showToast('Marked as unread');
+}
+function filterEmails(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.ftag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderEmailList(f);
+}
+
+// ─── CREATE PROJECT ───────────────────────────────────────────────────────────
+let selectedPriority='med';
+let teamSize=5,cpInternCount=1;
+let projects=[
+  {name:'Zensar Banking Modernization',client:'HDFC Bank',domain:'Banking & Finance',skills:['Java','Spring Boot','Oracle DB'],priority:'high',team:8,start:'2026-01-15',end:'2026-09-30'},
+  {name:'Retail Cloud Migration',client:'Big Basket',domain:'Cloud & Infrastructure',skills:['AWS','Python','Terraform'],priority:'med',team:5,start:'2026-02-01',end:'2026-07-31'},
+  {name:'Healthcare AI Platform',client:'Apollo Hospitals',domain:'Healthcare & Life Sciences',skills:['ML/AI','Python','FHIR'],priority:'high',team:6,start:'2026-03-01',end:'2026-12-31'},
+  {name:'FinTech API Gateway',client:'Paytm',domain:'Banking & Finance',skills:['Node.js','REST APIs','Kafka'],priority:'med',team:4,start:'2026-02-15',end:'2026-08-15'},
+];
+function setPriority(p){
+  selectedPriority=p;
+  ['high','med','low'].forEach(x=>{
+    const el=document.getElementById('prio-'+x);
+    el.className='priority-opt';
+    if(x===p)el.classList.add('selected-'+x);
+  });
+}
+function chgTeam(d){teamSize=Math.max(1,Math.min(50,teamSize+d));document.getElementById('team-size').textContent=teamSize}
+function chgCpIntern(d){cpInternCount=Math.max(0,Math.min(20,cpInternCount+d));document.getElementById('cp-intern-count').textContent=cpInternCount}
+function addSkill(){
+  const inp=document.getElementById('skill-input');
+  const val=inp.value.trim();if(!val)return;
+  const chip=document.createElement('span');
+  chip.className='skill-chip';
+  chip.innerHTML=`${val} <span class="chip-remove" onclick="removeSkill(this)">&#215;</span>`;
+  document.getElementById('skills-tags').appendChild(chip);
+  inp.value='';
+}
+function removeSkill(el){el.parentElement.remove()}
+function getSkills(){return[...document.querySelectorAll('.skill-chip')].map(c=>c.textContent.replace('×','').trim())}
+function validateForm(){
+  let valid=true;
+  [{id:'cp-name',err:'err-name'},{id:'cp-desc',err:'err-desc'},{id:'cp-client',err:'err-client'},{id:'cp-start',err:'err-start'},{id:'cp-end',err:'err-end'}].forEach(({id,err})=>{
+    const el=document.getElementById(id),er=document.getElementById(err);
+    if(!el.value.trim()){el.classList.add('error');er.style.display='block';valid=false;}
+    else{el.classList.remove('error');er.style.display='none';}
+  });
+  const skills=getSkills();
+  const se=document.getElementById('err-skills');
+  if(!skills.length){se.style.display='block';valid=false;}else{se.style.display='none';}
+  return valid;
+}
+function submitProject(){
+  if(!validateForm())return;
+  const proj={
+    name:document.getElementById('cp-name').value.trim(),
+    client:document.getElementById('cp-client').value.trim(),
+    domain:document.getElementById('cp-domain').value||'General',
+    skills:getSkills(),priority:selectedPriority,team:teamSize,
+    start:document.getElementById('cp-start').value,
+    end:document.getElementById('cp-end').value,
+  };
+  projects.unshift(proj);
+  updateProjectCounts();renderProjectList();
+  const sel=document.getElementById('proj');
+  const opt=document.createElement('option');
+  opt.value='custom_'+Date.now();opt.textContent=proj.name;
+  sel.appendChild(opt);
+  showToast(`"${proj.name}" created successfully!`);
+  resetForm();
+}
+function resetForm(){
+  ['cp-name','cp-desc','cp-client','cp-pm','cp-start','cp-end','cp-budget','cp-exp','cp-notes'].forEach(id=>{
+    const el=document.getElementById(id);if(el){el.value='';el.classList.remove('error');}
+  });
+  document.getElementById('cp-domain').value='';
+  document.getElementById('skills-tags').innerHTML='';
+  document.querySelectorAll('.field-error').forEach(e=>e.style.display='none');
+  teamSize=5;cpInternCount=1;
+  document.getElementById('team-size').textContent=5;
+  document.getElementById('cp-intern-count').textContent=1;
+  setPriority('med');
+}
+function updateProjectCounts(){
+  const n=projects.length;
+  document.getElementById('proj-count-badge').textContent=n+' project'+(n!==1?'s':'');
+  document.getElementById('tab-proj-count').textContent=n;
+  document.getElementById('sb-proj-count').textContent=n;
+  document.getElementById('active-proj-count').textContent=64+Math.max(0,n-4);
+}
+function renderProjectList(){
+  const el=document.getElementById('proj-list');
+  if(!projects.length){el.innerHTML='<div class="empty-proj">No projects yet. Create your first project!</div>';return;}
+  const prioTag={high:'pt-red',med:'pt-warn',low:'pt-green'};
+  const prioLabel={high:'High',med:'Medium',low:'Low'};
+  el.innerHTML=projects.map(p=>`
+    <div class="proj-item">
+      <div class="proj-name">${p.name}<span class="ptag ${prioTag[p.priority]}">${prioLabel[p.priority]}</span></div>
+      <div class="proj-meta">${p.client} &middot; ${p.domain} &middot; ${p.team} members</div>
+      <div class="proj-tags">
+        ${p.skills.slice(0,3).map(s=>`<span class="ptag pt-blue">${s}</span>`).join('')}
+        ${p.skills.length>3?`<span class="ptag pt-blue">+${p.skills.length-3}</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+// ─── UPSKILLING ───────────────────────────────────────────────────────────────
+const UP_COURSES=[
+  {icon:'☁️',title:'AWS Solutions Architect',sub:'Cloud infrastructure design and deployment on AWS.',enrolled:false,progress:62,count:'87 enrolled'},
+  {icon:'🐍',title:'Python for ML Engineers',sub:'Advanced Python, pandas, scikit-learn and model deployment.',enrolled:false,progress:78,count:'124 enrolled'},
+  {icon:'⚙️',title:'DevOps & CI/CD Mastery',sub:'Jenkins, Docker, Kubernetes and GitHub Actions pipelines.',enrolled:false,progress:45,count:'56 enrolled'},
+  {icon:'🤖',title:'Generative AI Fundamentals',sub:'LLMs, prompt engineering, and AI application development.',enrolled:false,progress:33,count:'201 enrolled'},
+  {icon:'🔐',title:'Cybersecurity Essentials',sub:'OWASP, penetration testing, and security best practices.',enrolled:false,progress:55,count:'43 enrolled'},
+  {icon:'📊',title:'Power BI & Data Analytics',sub:'Business intelligence, dashboards and data storytelling.',enrolled:false,progress:71,count:'98 enrolled'},
+];
+function renderUpskilling(){
+  document.getElementById('up-grid').innerHTML=UP_COURSES.map((c,i)=>`
+    <div class="up-card">
+      <div class="up-card-icon">${c.icon}</div>
+      <div class="up-card-title">${c.title}</div>
+      <div class="up-card-sub">${c.sub} <span style="color:var(--muted);font-size:10px">${c.count}</span></div>
+      <div class="up-progress-label"><span>Completion rate</span><span>${c.progress}%</span></div>
+      <div class="up-progress-track"><div class="up-progress-fill" style="width:${c.progress}%"></div></div>
+      <button class="up-enroll-btn${c.enrolled?' enrolled':''}" id="enroll-${i}" onclick="enrollCourse(${i})">${c.enrolled?'✓ Enrolled':'+ Enroll Team'}</button>
+    </div>`).join('');
+}
+function enrollCourse(i){
+  UP_COURSES[i].enrolled=!UP_COURSES[i].enrolled;
+  const btn=document.getElementById('enroll-'+i);
+  btn.textContent=UP_COURSES[i].enrolled?'✓ Enrolled':'+ Enroll Team';
+  btn.className='up-enroll-btn'+(UP_COURSES[i].enrolled?' enrolled':'');
+  showToast(UP_COURSES[i].enrolled?`Team enrolled in "${UP_COURSES[i].title}"`:`Unenrolled from "${UP_COURSES[i].title}"`);
+}
+
+// ─── BENCH PREDICTION ─────────────────────────────────────────────────────────
+const BENCH_DATA=[
+  {name:'Vikram Sharma',role:'DevOps Engineer',skills:'Docker, K8s, Jenkins',days:30,risk:'high',util:'12%'},
+  {name:'Kiran Reddy',role:'Data Scientist',skills:'Python, TensorFlow, SQL',days:24,risk:'high',util:'18%'},
+  {name:'Meena Trivedi',role:'QA Engineer',skills:'Selenium, API Testing',days:20,risk:'high',util:'25%'},
+  {name:'Arjun Mehta',role:'Java Developer',skills:'Java, Spring Boot',days:18,risk:'med',util:'42%'},
+  {name:'Priya Nair',role:'Cloud Architect',skills:'AWS, Terraform, Azure',days:15,risk:'med',util:'55%'},
+  {name:'Rohan Das',role:'Frontend Dev',skills:'React, TypeScript, CSS',days:12,risk:'med',util:'60%'},
+  {name:'Sneha Kulkarni',role:'Business Analyst',skills:'JIRA, Confluence, SQL',days:8,risk:'low',util:'75%'},
+  {name:'Amit Joshi',role:'Node.js Developer',skills:'Node.js, REST, MongoDB',days:5,risk:'low',util:'88%'},
+];
+function renderBench(){
+  document.getElementById('bench-rows').innerHTML=BENCH_DATA.map(r=>`
+    <div class="bench-row">
+      <div><div class="bench-name">${r.name}</div><div class="bench-role">${r.role}</div></div>
+      <div style="font-size:11px;color:var(--muted)">${r.skills}</div>
+      <div style="font-size:13px;font-weight:700;color:${r.days>20?'var(--danger)':r.days>12?'var(--warn)':'var(--accent)'}">${r.days}d</div>
+      <div><span class="risk-badge risk-${r.risk}">${r.risk.toUpperCase()}</span></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2)">${r.util}</div>
+      <div><button class="bench-act-btn" onclick="showToast('Running AI match for ${r.name}...')">Match Now</button></div>
+    </div>`).join('');
+}
+
+// ─── SKILL TRENDS ─────────────────────────────────────────────────────────────
+function renderTrends(){
+  const rising=[{s:'Generative AI',p:94,c:'#a371f7'},{s:'Kubernetes',p:82,c:'#2f81f7'},{s:'Python ML',p:78,c:'#3fb950'},{s:'Cloud Native',p:71,c:'#0891b2'},{s:'React / Next.js',p:65,c:'#f78166'},{s:'Terraform IaC',p:58,c:'#d29922'}];
+  const gap=[{s:'FHIR / HL7',p:88,c:'#f78166'},{s:'Rust',p:76,c:'#d29922'},{s:'Data Engineering',p:65,c:'#a371f7'},{s:'Golang',p:58,c:'#2f81f7'},{s:'Cybersecurity',p:52,c:'#3fb950'},{s:'MLOps',p:47,c:'#0891b2'}];
+  document.getElementById('trends-grid').innerHTML=`
+    <div class="trend-card"><div class="chart-label" style="margin-bottom:14px">📈 Rising Demand Skills</div>${rising.map(r=>`<div class="trend-row"><div class="trend-skill">${r.s}</div><div class="trend-bar-wrap"><div class="trend-bar-fill" style="width:${r.p}%;background:${r.c}"></div></div><div class="trend-pct" style="color:${r.c}">${r.p}%</div></div>`).join('')}</div>
+    <div class="trend-card"><div class="chart-label" style="margin-bottom:14px">⚠️ Internal Skill Gaps</div>${gap.map(r=>`<div class="trend-row"><div class="trend-skill">${r.s}</div><div class="trend-bar-wrap"><div class="trend-bar-fill" style="width:${r.p}%;background:${r.c}"></div></div><div class="trend-pct" style="color:${r.c}">${r.p}%</div></div>`).join('')}</div>
+    <div class="trend-card" style="grid-column:span 2"><div class="chart-label" style="margin-bottom:14px">💡 AI Upskilling Recommendations</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${[{t:'Enroll 45 Python devs in GenAI track',icon:'🤖',c:'var(--purple)'},{t:'27 Java devs need Microservices refresher',icon:'☕',c:'var(--warn)'},{t:'18 Cloud engineers should upskill to FinOps',icon:'☁️',c:'var(--primary)'}].map(r=>`<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px"><div style="font-size:22px;margin-bottom:8px">${r.icon}</div><div style="font-size:12px;color:${r.c};font-weight:600;line-height:1.5">${r.t}</div></div>`).join('')}</div></div>`;
+}
+
+// ─── GIG MARKET ──────────────────────────────────────────────────────────────
+const GIGS=[
+  {title:'Senior Java Architect',company:'TCS (Partner)',rate:'₹7,200',tags:['Java','Spring Boot','Microservices'],duration:'6 months',applied:false},
+  {title:'ML Engineer — Freelance',company:'Infosys (Gig)',rate:'₹5,800',tags:['Python','TensorFlow','MLOps'],duration:'3 months',applied:false},
+  {title:'DevOps Consultant',company:'Wipro (Contract)',rate:'₹6,500',tags:['Kubernetes','Docker','AWS'],duration:'4 months',applied:false},
+  {title:'React Lead Developer',company:'Accenture (Partner)',rate:'₹5,200',tags:['React','TypeScript','GraphQL'],duration:'5 months',applied:false},
+  {title:'Data Engineer',company:'Capgemini (Gig)',rate:'₹4,900',tags:['Spark','Kafka','Python'],duration:'6 months',applied:false},
+  {title:'Cloud Security Specialist',company:'IBM (Partner)',rate:'₹8,100',tags:['Azure','CISSP','Zero Trust'],duration:'12 months',applied:false},
+];
+function renderGig(){
+  document.getElementById('gig-grid').innerHTML=GIGS.map((g,i)=>`
+    <div class="gig-card">
+      <div class="gig-header">
+        <div><div class="gig-title">${g.title}</div><div class="gig-company">${g.company}</div></div>
+        <div style="text-align:right"><div class="gig-rate">${g.rate}</div><div class="gig-rate-label">/ day</div></div>
+      </div>
+      <div class="gig-tags">${g.tags.map(t=>`<span class="gig-tag">${t}</span>`).join('')}</div>
+      <div class="gig-footer">
+        <div class="gig-duration">⏱ ${g.duration}</div>
+        <button class="gig-apply-btn${g.applied?' applied':''}" id="gig-${i}" onclick="applyGig(${i})">${g.applied?'✓ Applied':'Apply Now'}</button>
+      </div>
+    </div>`).join('');
+}
+function applyGig(i){
+  GIGS[i].applied=true;
+  document.getElementById('gig-'+i).textContent='✓ Applied';
+  document.getElementById('gig-'+i).className='gig-apply-btn applied';
+  showToast(`Application submitted for "${GIGS[i].title}"`);
+}
+
+// ─── REPORTS ─────────────────────────────────────────────────────────────────
+function renderReports(){
+  const reps=[
+    {icon:'📊',t:'Bench Utilization Report',sub:'Monthly analysis of bench days, costs, and resolution timelines.',btn:'Download PDF'},
+    {icon:'🎯',t:'AI Match Accuracy Report',sub:'Success rate, placement speed, and model performance metrics.',btn:'Download PDF'},
+    {icon:'📈',t:'Skill Gap Analysis',sub:'Current skill inventory vs. market demand across all domains.',btn:'Download Excel'},
+    {icon:'💰',t:'Cost Optimization Report',sub:'Bench cost, intern utilization savings and revenue impact.',btn:'Download PDF'},
+    {icon:'🎓',t:'Upskilling Progress Report',sub:'Course completions, certifications, and skill growth tracking.',btn:'Download PDF'},
+    {icon:'🔮',t:'Workforce Forecast',sub:'AI-predicted hiring needs, bench risk, and capacity planning.',btn:'Download PDF'},
+  ];
+  document.getElementById('reports-grid').innerHTML=reps.map(r=>`
+    <div class="report-card">
+      <div class="report-icon">${r.icon}</div>
+      <div class="report-title">${r.t}</div>
+      <div class="report-sub">${r.sub}</div>
+      <button class="report-btn" onclick="showToast('${r.t} downloaded!')">⬇ ${r.btn}</button>
+    </div>`).join('');
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+const SETTINGS_NAV=['General','AI Model','Notifications','Integrations','Security','Team'];
+const SETTINGS_CONTENT={
+  General:[
+    {l:'Company Name',sub:'Zensar Technologies Ltd.',type:'text',val:'Zensar Technologies'},
+    {l:'Fiscal Year Start',sub:'Used for workforce planning cycles',type:'toggle',val:true},
+    {l:'Default Currency',sub:'INR — Indian Rupee',type:'toggle',val:true},
+    {l:'Dark Mode',sub:'Current theme preference',type:'toggle',val:true},
+  ],
+  'AI Model':[
+    {l:'AI Matching Engine',sub:'Use Claude AI for candidate matching',type:'toggle',val:true},
+    {l:'Auto-Send Match Reports',sub:'Automatically email match results to managers',type:'toggle',val:false},
+    {l:'Intern Suggestion',sub:'AI suggests intern allocation for projects',type:'toggle',val:true},
+    {l:'Bench Risk Alerts',sub:'AI monitors and alerts on bench risk',type:'toggle',val:true},
+  ],
+  Notifications:[
+    {l:'Email Notifications',sub:'Receive updates via email',type:'toggle',val:true},
+    {l:'Bench Alerts',sub:'Alert when employees idle 20+ days',type:'toggle',val:true},
+    {l:'Match Reports',sub:'Receive AI match completion reports',type:'toggle',val:false},
+    {l:'Weekly Digest',sub:'Weekly workforce summary email',type:'toggle',val:true},
+  ],
+};
+let activeSettingsTab='General';
+function renderSettings(){
+  document.getElementById('settings-nav').innerHTML=SETTINGS_NAV.map(n=>`
+    <button class="settings-nav-item${n===activeSettingsTab?' active':''}" onclick="switchSettingsTab('${n}')">⚙ ${n}</button>`).join('');
+  const rows=SETTINGS_CONTENT[activeSettingsTab]||[{l:'Coming Soon',sub:'This section is under development.',type:'toggle',val:false}];
+  document.getElementById('settings-content').innerHTML=rows.map((r,i)=>`
+    <div class="settings-row">
+      <div><div class="settings-label">${r.l}</div><div class="settings-sub">${r.sub}</div></div>
+      <label class="toggle"><input type="checkbox"${r.val?' checked':''} onchange="showToast('Setting updated')"><div class="toggle-slider"></div></label>
+    </div>`).join('');
+}
+function switchSettingsTab(t){activeSettingsTab=t;renderSettings();}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderProjectList();
+updateProjectCounts();
+</script>
+
+
+<!-- ══════════════════════════════════════════
+     STEP 1: CSS STYLES
+══════════════════════════════════════════ -->
+<style>
+/* ── MODAL OVERLAY ── */
+.btf-overlay {
+  position: fixed; inset: 0;
+  background: rgba(11,28,61,.6);
+  backdrop-filter: blur(4px);
+  z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.btf-overlay.open { opacity: 1; pointer-events: all; }
+
+/* ── MODAL BOX ── */
+.btf-modal {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(11,28,61,.25);
+  width: 700px; max-width: 95vw; max-height: 90vh;
+  display: flex; flex-direction: column;
+  transform: translateY(20px) scale(.97);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+}
+.btf-overlay.open .btf-modal { transform: translateY(0) scale(1); }
+
+/* ── MODAL HEADER ── */
+.btf-header {
+  background: linear-gradient(135deg, #0B1C3D, #1A4494);
+  padding: 18px 22px;
+  border-radius: 14px 14px 0 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.btf-header-left { display: flex; align-items: center; gap: 10px; }
+.btf-header-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+.btf-header-title { color: #fff; font-weight: 700; font-size: 14px; }
+.btf-header-sub { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 2px; }
+.btf-close-btn {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,.7); font-size: 22px; line-height: 1;
+  padding: 4px 8px; border-radius: 6px; transition: background .15s;
+}
+.btf-close-btn:hover { background: rgba(255,255,255,.15); }
+
+/* ── QUICK BUTTONS BAR ── */
+.btf-quick-bar {
+  padding: 10px 14px;
+  background: #EEF2FA;
+  border-bottom: 1px solid #D4DCF0;
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.btf-quick-btn {
+  font-size: 11px; font-weight: 600;
+  padding: 5px 12px; border-radius: 14px;
+  background: #fff; color: #1A4494;
+  border: 1px solid #D4DCF0;
+  cursor: pointer; transition: all .15s;
+  font-family: inherit;
+}
+.btf-quick-btn:hover { background: #1A4494; color: #fff; border-color: #1A4494; }
+
+/* ── MESSAGES AREA ── */
+.btf-messages {
+  flex: 1; overflow-y: auto;
+  padding: 20px; display: flex;
+  flex-direction: column; gap: 14px;
+  min-height: 280px; max-height: 400px;
+}
+.btf-messages::-webkit-scrollbar { width: 4px; }
+.btf-messages::-webkit-scrollbar-thumb { background: #D4DCF0; border-radius: 2px; }
+
+/* ── MESSAGE BUBBLES ── */
+.btf-msg { display: flex; gap: 10px; align-items: flex-start; animation: btfFadeIn .2s ease; }
+.btf-msg.user { flex-direction: row-reverse; }
+@keyframes btfFadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+
+.btf-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.btf-msg.bot .btf-avatar { background: #0B1C3D; }
+.btf-msg.user .btf-avatar { background: linear-gradient(135deg,#E8460F,#F26522); }
+
+.btf-bubble {
+  max-width: 80%; padding: 12px 15px;
+  border-radius: 10px; font-size: 12.5px; line-height: 1.65;
+}
+.btf-msg.bot .btf-bubble {
+  background: #EEF2FA; color: #1A2545;
+  border-radius: 4px 10px 10px 10px;
+}
+.btf-msg.user .btf-bubble {
+  background: linear-gradient(135deg, #1A4494, #2E7EE0);
+  color: #fff; border-radius: 10px 4px 10px 10px;
+}
+
+/* ── INPUT BAR ── */
+.btf-input-bar {
+  padding: 14px 16px;
+  border-top: 1px solid #D4DCF0;
+  display: flex; gap: 10px; background: #fff;
+  border-radius: 0 0 14px 14px;
+}
+.btf-input {
+  flex: 1; border: 1.5px solid #D4DCF0;
+  border-radius: 8px; padding: 10px 14px;
+  font-family: inherit; font-size: 13px;
+  color: #1A2545; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.btf-input:focus { border-color: #2E7EE0; box-shadow: 0 0 0 3px rgba(46,126,224,.12); }
+.btf-send-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #E8460F, #F26522);
+  color: #fff; border: none; border-radius: 8px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+  box-shadow: 0 2px 8px rgba(232,70,15,.3);
+}
+.btf-send-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* ── ROBOT HEAD BUTTON ── */
+@keyframes btfRobotFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+@keyframes btfRobotGlow  { 0%,100%{box-shadow:0 4px 18px rgba(11,28,61,.35),0 0 0 0 rgba(46,126,224,.5);} 50%{box-shadow:0 4px 18px rgba(11,28,61,.35),0 0 0 7px rgba(46,126,224,0);} }
+
+#btf-robot-btn {
+  position: fixed; right: 24px; bottom: 24px; z-index: 8999;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, #0B1C3D, #1A4494);
+  border: 2px solid #2E7EE0;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  animation: btfRobotGlow 2.5s ease-in-out infinite;
+  transition: transform .2s;
+}
+#btf-robot-btn:hover { transform: scale(1.1); }
+#btf-robot-btn svg { animation: btfRobotFloat 3s ease-in-out infinite; }
+
+/* ── SPEECH BUBBLE ── */
+#btf-speech {
+  position: fixed; right: 84px; bottom: 29px; z-index: 8999;
+  background: #fff; border: 1.5px solid #1A4494;
+  border-radius: 10px 10px 0 10px;
+  padding: 7px 12px; font-size: 11px; font-weight: 700;
+  color: #1A4494; white-space: nowrap;
+  box-shadow: 0 3px 12px rgba(11,28,61,.15);
+  pointer-events: none;
+  font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+  transition: all .2s;
+}
+</style>
+
+
+<!-- ══════════════════════════════════════════
+     STEP 2: HTML — ROBOT + SPEECH BUBBLE + MODAL
+══════════════════════════════════════════ -->
+
+<!-- Speech Bubble -->
+<div id="btf-speech">Hi! Easy Tool Here 👋</div>
+
+<!-- Robot Head Button -->
+<div id="btf-robot-btn" title="Your AI Assistant"
+  onclick="btfOpenChat()"
+  onmouseenter="btfRobotHover(true)"
+  onmouseleave="btfRobotHover(false)">
+  <svg width="32" height="36" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+    <line x1="16" y1="1" x2="16" y2="6" stroke="#2E7EE0" stroke-width="1.8" stroke-linecap="round"/>
+    <circle cx="16" cy="1" r="2" fill="#E8460F">
+      <animate attributeName="r" values="2;3;2" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+    <rect x="4" y="6" width="24" height="20" rx="6" fill="#1A4494"/>
+    <rect x="6" y="8" width="20" height="16" rx="4" fill="#0B1C3D"/>
+    <ellipse cx="11" cy="15" rx="3.5" ry="3.5" fill="#2E7EE0">
+      <animate attributeName="ry" values="3.5;0.4;3.5" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+    </ellipse>
+    <ellipse cx="11" cy="15" rx="1.8" ry="1.8" fill="#fff">
+      <animate attributeName="ry" values="1.8;0.2;1.8" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+    </ellipse>
+    <ellipse cx="21" cy="15" rx="3.5" ry="3.5" fill="#2E7EE0">
+      <animate attributeName="ry" values="3.5;0.4;3.5" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+    </ellipse>
+    <ellipse cx="21" cy="15" rx="1.8" ry="1.8" fill="#fff">
+      <animate attributeName="ry" values="1.8;0.2;1.8" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+    </ellipse>
+    <path d="M11 21 Q16 25 21 21" stroke="#2E7EE0" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <rect x="1" y="12" width="3" height="7" rx="1.5" fill="#1A4494"/>
+    <rect x="28" y="12" width="3" height="7" rx="1.5" fill="#1A4494"/>
+  </svg>
+</div>
+
+<!-- AI Chat Modal -->
+<div class="btf-overlay" id="btf-overlay" onclick="btfCloseOnBg(event)">
+  <div class="btf-modal">
+
+    <!-- Header -->
+    <div class="btf-header">
+      <div class="btf-header-left">
+        <div class="btf-header-icon">🤖</div>
+        <div>
+          <div class="btf-header-title">Your AI Assistant</div>
+          <div class="btf-header-sub">Ask about employees, skills, bench risk & recommendations</div>
+        </div>
+      </div>
+      <button class="btf-close-btn" onclick="btfCloseChat()">×</button>
+    </div>
+
+    <!-- Quick Buttons -->
+    <div class="btf-quick-bar" id="btf-quick-bar"></div>
+
+    <!-- Messages -->
+    <div class="btf-messages" id="btf-messages"></div>
+
+    <!-- Input -->
+    <div class="btf-input-bar">
+      <input class="btf-input" id="btf-input"
+        type="text"
+        placeholder="Ask: Who has highest bench risk? Suggest team for P1…"
+        onkeydown="if(event.key==='Enter') btfSend()"/>
+      <button class="btf-send-btn" onclick="btfSend()">Send ➤</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STEP 3: JAVASCRIPT — DATA + AI LOGIC
+══════════════════════════════════════════ -->
+<script>
+// ════════════════════════════════════════
+// DATA — Replace with your own if needed
+// ════════════════════════════════════════
+const BTF_EMPLOYEES = [
+  {id:1,  name:"Arjun Mehta",   email:"arjun.mehta@zensar.com",   role:"Backend Engineer",     skills:["Python","Flask","MongoDB","REST API"],      exp:5, bench:18, cost:320},
+  {id:2,  name:"Priya Sharma",  email:"priya.sharma@zensar.com",  role:"Frontend Developer",   skills:["React","JavaScript","CSS","HTML"],           exp:3, bench:6,  cost:270},
+  {id:3,  name:"Kiran Rao",     email:"kiran.rao@zensar.com",     role:"Data Scientist",        skills:["Python","ML","Pandas","TensorFlow"],         exp:7, bench:24, cost:380},
+  {id:4,  name:"Sneha Patel",   email:"sneha.patel@zensar.com",   role:"Full-Stack Developer",  skills:["Node.js","React","MongoDB","AWS"],           exp:4, bench:11, cost:300},
+  {id:5,  name:"Vikram Singh",  email:"vikram.singh@zensar.com",  role:"DevOps Engineer",       skills:["Docker","Kubernetes","AWS","CI/CD"],         exp:6, bench:30, cost:350},
+  {id:6,  name:"Anita Desai",   email:"anita.desai@zensar.com",   role:"UI/UX Designer",        skills:["Figma","CSS","JavaScript","HTML"],           exp:3, bench:8,  cost:260},
+  {id:7,  name:"Rahul Nair",    email:"rahul.nair@zensar.com",    role:"Cloud Architect",       skills:["AWS","Azure","Terraform","Docker"],          exp:9, bench:5,  cost:420},
+  {id:8,  name:"Deepa Kumar",   email:"deepa.kumar@zensar.com",   role:"ML Engineer",           skills:["Python","TensorFlow","Keras","SQL"],         exp:5, bench:14, cost:340},
+  {id:9,  name:"Arun Joshi",    email:"arun.joshi@zensar.com",    role:"Java Backend Dev",      skills:["Java","Spring Boot","MySQL","REST API"],     exp:4, bench:0,  cost:290},
+  {id:10, name:"Meena Thomas",  email:"meena.thomas@zensar.com",  role:"QA Engineer",           skills:["Selenium","Python","Testing","SQL"],         exp:3, bench:20, cost:240},
+  {id:11, name:"Rohit Kapoor",  email:"rohit.kapoor@zensar.com",  role:"Mobile Developer",      skills:["Flutter","Dart","Firebase","REST API"],      exp:4, bench:3,  cost:295},
+  {id:12, name:"Sanya Gupta",   email:"sanya.gupta@zensar.com",   role:"Data Analyst",          skills:["SQL","Python","Tableau","Excel"],            exp:2, bench:9,  cost:220},
+  {id:13, name:"Nikhil Verma",  email:"nikhil.verma@zensar.com",  role:"Security Engineer",     skills:["Cybersecurity","Python","Docker","Linux"],   exp:6, bench:0,  cost:360},
+  {id:14, name:"Pooja Iyer",    email:"pooja.iyer@zensar.com",    role:"Product Manager",       skills:["Agile","JIRA","Python","SQL"],               exp:5, bench:2,  cost:330},
+];
+
+const BTF_INTERNS = [
+  {id:"I1", name:"Riya Bansal", email:"riya.bansal@zensar-intern.com", skills:["HTML","CSS","JavaScript","React"], level:"Frontend Intern"},
+  {id:"I2", name:"Dev Sharma",  email:"dev.sharma@zensar-intern.com",  skills:["Python","SQL","Pandas"],           level:"Data Intern"},
+  {id:"I3", name:"Aisha Khan",  email:"aisha.khan@zensar-intern.com",  skills:["Testing","Python","Selenium"],     level:"QA Intern"},
+];
+
+const BTF_PROJECTS = [
+  {id:"P1", name:"E-Commerce Platform Revamp",  skills:["React","Node.js","MongoDB","AWS"],       diff:"High",   dur:"10–12 weeks", team:"4–6", desc:"Full-stack overhaul of retail platform"},
+  {id:"P2", name:"Customer Churn Predictor",    skills:["Python","ML","TensorFlow","Pandas"],     diff:"High",   dur:"8–10 weeks",  team:"3–4", desc:"ML pipeline using historical data"},
+  {id:"P3", name:"Internal HR Dashboard",       skills:["React","Python","SQL","REST API"],        diff:"Medium", dur:"6–8 weeks",   team:"3–5", desc:"Analytics dashboard for HR metrics"},
+  {id:"P4", name:"CI/CD Pipeline Automation",   skills:["Docker","Kubernetes","CI/CD","AWS"],      diff:"Medium", dur:"4–6 weeks",   team:"2–3", desc:"Automated pipeline for microservices"},
+  {id:"P5", name:"Mobile App MVP",              skills:["Flutter","Firebase","REST API","Figma"],  diff:"Low",    dur:"6–8 weeks",   team:"2–3", desc:"Cross-platform MVP for startup client"},
+  {id:"P6", name:"Data Warehouse Migration",    skills:["Python","SQL","AWS","Tableau"],           diff:"Medium", dur:"8–10 weeks",  team:"3–4", desc:"Legacy DB → cloud-native AWS warehouse"},
+];
+
+// ════════════════════════════════════════
+// QUICK QUESTIONS
+// ════════════════════════════════════════
+const BTF_QUICK_QUESTIONS = [
+  "Who has highest bench risk?",
+  "Skills most in demand?",
+  "Suggest team for Project P1",
+  "Who should upskill in Cloud?",
+  "Show idle cost summary",
+  "Best intern for testing tasks?",
+];
+
+// ════════════════════════════════════════
+// AI RESPONSE ENGINE
+// ════════════════════════════════════════
+const BTF_RESPONSES = {
+
+  // 1. BENCH RISK
+  "bench risk": () => {
+    const all      = [...BTF_EMPLOYEES].filter(e=>e.bench>0).sort((a,b)=>b.bench-a.bench);
+    const critical = all.filter(e=>e.bench>=20);
+    const high     = all.filter(e=>e.bench>=10 && e.bench<20);
+    const medium   = all.filter(e=>e.bench>0  && e.bench<10);
+    const totalCost= all.reduce((s,e)=>s+(e.bench*e.cost),0);
+    return `📊 **Bench Risk Report — All ${all.length} Employees on Bench**\n\n`
+      + `🔴 **CRITICAL RISK** (20+ days) — ${critical.length} employee${critical.length!==1?'s':''}\n`
+      + critical.map(e=>`   • ${e.name} (${e.role}) — ${e.bench} days idle · Idle cost: ₹${(e.bench*e.cost).toLocaleString()}`).join('\n')
+      + `\n\n🟡 **HIGH RISK** (10–19 days) — ${high.length} employee${high.length!==1?'s':''}\n`
+      + high.map(e=>`   • ${e.name} (${e.role}) — ${e.bench} days idle · Idle cost: ₹${(e.bench*e.cost).toLocaleString()}`).join('\n')
+      + `\n\n🔵 **MEDIUM RISK** (1–9 days) — ${medium.length} employee${medium.length!==1?'s':''}\n`
+      + medium.map(e=>`   • ${e.name} (${e.role}) — ${e.bench} days idle · Idle cost: ₹${(e.bench*e.cost).toLocaleString()}`).join('\n')
+      + `\n\n💰 **Total Bench Cost to Date:** ₹${totalCost.toLocaleString()}\n`
+      + `⚡ **Recommended Action:** Immediately assign ${critical[0]?.name||'critical risk employees'} to an active project. Use the Project Match tab to find best-fit openings.`;
+  },
+
+  // 2. SKILL DEMAND
+  "demand": () => {
+    const skillMap = {};
+    BTF_EMPLOYEES.forEach(e=>e.skills.forEach(s=>{ skillMap[s]=(skillMap[s]||0)+1; }));
+    const topInternal = Object.entries(skillMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    return `📊 **Skill Demand Analysis — FY 2025–26**\n\n`
+      + `🔺 **Highest Market Demand (vs Internal Supply):**\n`
+      + `   1. ☁️ Cloud (AWS/Azure/Kubernetes) — 92% market demand · only 38% internal supply → Critical Gap\n`
+      + `   2. 🤖 AI / ML Engineering — 88% market demand · only 28% internal supply → Critical Gap\n`
+      + `   3. ⚙️ DevOps / Kubernetes — 84% market demand · 35% internal supply → High Gap\n`
+      + `   4. 🔒 Cybersecurity / SecOps — 70% market demand · only 14% internal supply → Critical Gap\n`
+      + `   5. 📱 Flutter / Mobile Dev — 68% market demand · 28% internal supply → High Gap\n\n`
+      + `✅ **Top Skills in Current Workforce:**\n`
+      + topInternal.map((s,i)=>`   ${i+1}. ${s[0]} — ${s[1]} employee${s[1]>1?'s':''} have this skill`).join('\n')
+      + `\n\n📉 **Declining Demand (reduce hiring):**\n`
+      + `   • Manual Testing / Selenium only — demand down 25% YoY\n`
+      + `   • Java EE / Legacy Backend — demand down 18% YoY\n\n`
+      + `💡 **Recommendation:** Prioritise Cloud & AI/ML upskilling for bench employees immediately.`;
+  },
+
+  // 3. TEAM SUGGEST
+  "team": (q) => {
+    const pid  = q.match(/P\d/i)?.[0]?.toUpperCase() || "P1";
+    const proj = BTF_PROJECTS.find(p=>p.id===pid) || BTF_PROJECTS[0];
+    const scored = BTF_EMPLOYEES
+      .map(e=>{
+        const matched = proj.skills.filter(s=>e.skills.some(es=>es.toLowerCase().includes(s.toLowerCase())||s.toLowerCase().includes(es.toLowerCase())));
+        const missing = proj.skills.filter(s=>!e.skills.some(es=>es.toLowerCase().includes(s.toLowerCase())||s.toLowerCase().includes(es.toLowerCase())));
+        const pct = Math.round((matched.length/proj.skills.length)*100);
+        return {emp:e, matched, missing, pct};
+      })
+      .sort((a,b)=>b.pct-a.pct).slice(0,4);
+    const benchFirst = scored.filter(r=>r.emp.bench>0);
+    return `🎯 **AI Team Recommendation — ${proj.name}**\n\n`
+      + `📋 **Project:** ${proj.diff} difficulty · ${proj.dur} · Team of ${proj.team}\n`
+      + `🛠️ **Skills Needed:** ${proj.skills.join(', ')}\n\n`
+      + `👥 **Top Recommended Employees:**\n`
+      + scored.map((r,i)=>{
+          const rank = i===0?'⭐ Best Fit':i===1?'✅ Good Fit':i===2?'👍 Suitable':'🔄 Backup';
+          return `   ${rank} — **${r.emp.name}** (${r.emp.role}, ${r.emp.exp}yr exp)\n`
+               + `      Match: ${r.pct}% · Matched: ${r.matched.join(', ')||'—'}\n`
+               + (r.missing.length?`      Missing: ${r.missing.join(', ')} (can upskill)\n`:`      All required skills present ✓\n`)
+               + (r.emp.bench>0?`      ⚠️ On bench ${r.emp.bench} days — high priority to assign`:`      Currently on project`);
+        }).join('\n\n')
+      + `\n\n💡 **Tip:** ${benchFirst.length>0?`${benchFirst[0].emp.name} is on bench — assigning saves ₹${(benchFirst[0].emp.bench*benchFirst[0].emp.cost).toLocaleString()} in idle costs.`:'Use Project Match for detailed compatibility scores.'}`;
+  },
+
+  // 4. CLOUD UPSKILL
+  "cloud": () => {
+    const cloudSkills = ['AWS','Azure','Terraform','Kubernetes','Cloud','Docker'];
+    const noCloud      = BTF_EMPLOYEES.filter(e=>!e.skills.some(s=>cloudSkills.includes(s)));
+    const partialCloud = BTF_EMPLOYEES.filter(e=>e.skills.some(s=>cloudSkills.includes(s))&&!e.skills.some(s=>['AWS','Azure'].includes(s)));
+    const fullyCloud   = BTF_EMPLOYEES.filter(e=>e.skills.some(s=>['AWS','Azure'].includes(s)));
+    return `☁️ **Cloud Upskilling Recommendations**\n\n`
+      + `📊 **Current Cloud Coverage:**\n`
+      + `   • Fully Cloud-Ready (AWS/Azure): ${fullyCloud.length} employees\n`
+      + `   • Partial (Docker/K8s only): ${partialCloud.length} employees\n`
+      + `   • No Cloud Skills: ${noCloud.length} employees → Need immediate upskilling\n\n`
+      + `🔴 **Priority Upskill List (${noCloud.length} employees):**\n`
+      + noCloud.slice(0,6).map(e=>`   • **${e.name}** (${e.role}${e.bench>0?' · '+e.bench+' days on bench':''})\n     Skills: ${e.skills.join(', ')}`).join('\n')
+      + `\n\n📚 **Recommended Courses:**\n`
+      + `   1. 🏆 AWS Certified Solutions Architect (Coursera · 40h · Certification)\n`
+      + `      → Best for: Backend, Full-Stack, DevOps engineers\n`
+      + `   2. 🏆 AZ-900: Azure Fundamentals (Microsoft Learn · 10h · Certification)\n`
+      + `      → Best for: All roles — beginner friendly\n`
+      + `   3. Kubernetes for Developers (Udemy · 15h)\n`
+      + `   4. Terraform — Automate Infrastructure (Udemy · 16h · Certification)\n\n`
+      + `💡 **Business Impact:** Cloud has 92% market demand vs 38% internal supply — upskilling bench employees in Cloud can reduce bench time by 40–60%.`;
+  },
+
+  // 5. COST SUMMARY
+  "cost": () => {
+    const benched = BTF_EMPLOYEES.filter(e=>e.bench>0).sort((a,b)=>(b.bench*b.cost)-(a.bench*a.cost));
+    const totalIdle = benched.reduce((s,e)=>s+(e.bench*e.cost),0);
+    const savings   = Math.round(totalIdle*0.72);
+    const avgBench  = Math.round(benched.reduce((s,e)=>s+e.bench,0)/benched.length);
+    const critical  = benched.filter(e=>e.bench>=20);
+    return `💰 **Workforce Idle Cost Summary — FY 2025–26 Q4**\n\n`
+      + `📊 **Key Metrics:**\n`
+      + `   • Bench Employees: ${benched.length} out of ${BTF_EMPLOYEES.length}\n`
+      + `   • Average Bench Duration: ${avgBench} days\n`
+      + `   • Total Idle Cost: ₹${totalIdle.toLocaleString()}\n`
+      + `   • Estimated Savings if All Matched: ₹${savings.toLocaleString()} (72% recovery)\n`
+      + `   • Critical Risk Count: ${critical.length}\n\n`
+      + `🔴 **Top 5 Highest Idle Costs:**\n`
+      + benched.slice(0,5).map((e,i)=>`   ${i+1}. **${e.name}** (${e.role}) — ${e.bench} days · ₹${(e.bench*e.cost).toLocaleString()}`).join('\n')
+      + `\n\n📉 **Cost by Risk Level:**\n`
+      + `   • Critical (20+ days): ₹${benched.filter(e=>e.bench>=20).reduce((s,e)=>s+(e.bench*e.cost),0).toLocaleString()}\n`
+      + `   • High (10–19 days): ₹${benched.filter(e=>e.bench>=10&&e.bench<20).reduce((s,e)=>s+(e.bench*e.cost),0).toLocaleString()}\n`
+      + `   • Medium (1–9 days): ₹${benched.filter(e=>e.bench>0&&e.bench<10).reduce((s,e)=>s+(e.bench*e.cost),0).toLocaleString()}\n\n`
+      + `⚡ **Immediate Action:** Assign ${benched[0]?.name} (highest idle cost) to a project — saves ₹${Math.round((benched[0]?.bench*benched[0]?.cost)*0.72).toLocaleString()}.`;
+  },
+
+  // 6. INTERN
+  "intern": () => {
+    return `🎓 **Intern Allocation — Best for Testing Tasks**\n\n`
+      + `👩‍💻 **Aisha Khan** — QA Intern ✅ BEST MATCH\n`
+      + `   Skills: Testing, Python, Selenium\n`
+      + `   Email: aisha.khan@zensar-intern.com\n`
+      + `   Best For:\n`
+      + `   • Writing & executing manual test cases\n`
+      + `   • Selenium WebDriver automation scripts\n`
+      + `   • Regression & smoke testing\n`
+      + `   • Bug triage & JIRA defect logging\n`
+      + `   • API testing with Postman (with guidance)\n\n`
+      + `👨‍💻 **Dev Sharma** — Data Intern (Secondary)\n`
+      + `   Skills: Python, SQL, Pandas\n`
+      + `   Email: dev.sharma@zensar-intern.com\n`
+      + `   Best For: Test data scripts, SQL validation, pipeline testing\n\n`
+      + `👩‍🎨 **Riya Bansal** — Frontend Intern\n`
+      + `   Skills: HTML, CSS, JavaScript, React\n`
+      + `   Email: riya.bansal@zensar-intern.com\n`
+      + `   Best For: UI testing, cross-browser checks, frontend bug verification\n\n`
+      + `💡 **Recommendation:** Assign Aisha to the Automated QA Framework project — her Selenium + Python skills are a direct match. Post small testing gigs in the Gig Marketplace for all 3 interns.`;
+  },
+
+  // 7. EMPLOYEE LOOKUP
+  "employee": (q) => {
+    const found = BTF_EMPLOYEES.find(e=>
+      q.toLowerCase().includes(e.name.split(' ')[0].toLowerCase()) ||
+      q.toLowerCase().includes(e.name.split(' ')[1].toLowerCase())
+    );
+    if (!found) return BTF_RESPONSES['default'](q);
+    const risk = found.bench>=20?'🔴 CRITICAL':found.bench>=10?'🟡 HIGH':found.bench>0?'🔵 MEDIUM':'✅ Active (not on bench)';
+    const allNeeded = [...new Set(BTF_PROJECTS.flatMap(p=>p.skills))];
+    const gaps = allNeeded.filter(s=>!found.skills.some(e=>e.toLowerCase().includes(s.toLowerCase())||s.toLowerCase().includes(e.toLowerCase())));
+    return `👤 **Employee Profile — ${found.name}**\n\n`
+      + `   Role: ${found.role}\n`
+      + `   Experience: ${found.exp} years\n`
+      + `   Email: ${found.email}\n`
+      + `   Current Skills: ${found.skills.join(', ')}\n`
+      + `   Bench Status: ${found.bench>0?found.bench+' days on bench':'Active on project'}\n`
+      + `   Risk Level: ${risk}\n`
+      + `   Idle Cost to Date: ₹${(found.bench*found.cost).toLocaleString()}\n\n`
+      + (gaps.length?`⚠️ **Skill Gaps vs Project Pipeline:**\n${gaps.slice(0,5).map(g=>`   • Missing: ${g}`).join('\n')}\n\n`:`✅ Skills well-aligned with current project pipeline.\n\n`)
+      + `📚 **Recommended Next Step:** ${found.bench>0?'Enrol in upskilling immediately via ZensarU and match to a project.':'Continue current project. Plan next upskilling in Q2.'}`;
+  },
+
+  // 8. PROJECT LOOKUP
+  "project": (q) => {
+    const pid  = q.match(/P\d/i)?.[0]?.toUpperCase();
+    const proj = pid ? BTF_PROJECTS.find(p=>p.id===pid) : null;
+    if (!proj) {
+      return `📂 **All Active Projects — Zensar FY 2025–26**\n\n`
+        + BTF_PROJECTS.map((p,i)=>`${i+1}. **${p.name}** (${p.id})\n   Difficulty: ${p.diff} · Duration: ${p.dur} · Team: ${p.team}\n   Skills: ${p.skills.join(', ')}\n   ${p.desc}`).join('\n\n');
+    }
+    const top3 = BTF_EMPLOYEES
+      .map(e=>({emp:e,score:proj.skills.filter(s=>e.skills.some(es=>es.toLowerCase().includes(s.toLowerCase()))).length}))
+      .sort((a,b)=>b.score-a.score).slice(0,3);
+    return `📂 **Project — ${proj.name}**\n\n`
+      + `   ID: ${proj.id} · Difficulty: ${proj.diff}\n`
+      + `   Duration: ${proj.dur} · Team Size: ${proj.team}\n`
+      + `   Description: ${proj.desc}\n`
+      + `   Required Skills: ${proj.skills.join(', ')}\n\n`
+      + `👥 **Best Employee Matches:**\n`
+      + top3.map((r,i)=>`   ${i+1}. ${r.emp.name} (${r.emp.role}) — ${r.score}/${proj.skills.length} skills · ${r.emp.exp}yr exp${r.emp.bench>0?' · On bench '+r.emp.bench+'d':''}`).join('\n');
+  },
+
+  // 9. DEFAULT
+  "default": (q) => {
+    const benched  = BTF_EMPLOYEES.filter(e=>e.bench>0);
+    const totalIdle= BTF_EMPLOYEES.reduce((s,e)=>s+(e.bench*e.cost),0);
+    const topBench = [...BTF_EMPLOYEES].sort((a,b)=>b.bench-a.bench)[0];
+    return `🤖 **Workforce Intelligence Response**\n\n`
+      + `Query understood: "${q}"\n\n`
+      + `📊 **Current Workforce Snapshot:**\n`
+      + `   • Total Employees: ${BTF_EMPLOYEES.length}\n`
+      + `   • On Bench: ${benched.length} employees\n`
+      + `   • Active Projects: ${BTF_PROJECTS.length}\n`
+      + `   • Total Idle Cost: ₹${totalIdle.toLocaleString()}\n`
+      + `   • Highest Risk: ${topBench.name} (${topBench.bench} days)\n\n`
+      + `💡 **Try these queries:**\n`
+      + `   • "Who has highest bench risk?"\n`
+      + `   • "Suggest team for P2"\n`
+      + `   • "Who should upskill in Cloud?"\n`
+      + `   • "Show idle cost summary"\n`
+      + `   • "Best intern for testing tasks?"\n`
+      + `   • "Tell me about Arjun Mehta"\n`
+      + `   • "Show all projects"`;
+  }
+};
+
+// ════════════════════════════════════════
+// AI ROUTER — Maps questions to responses
+// ════════════════════════════════════════
+function btfRespond(q) {
+  const ql = q.toLowerCase();
+  // Employee name match
+  const empMatch = BTF_EMPLOYEES.find(e=>
+    ql.includes(e.name.split(' ')[0].toLowerCase()) ||
+    ql.includes(e.name.split(' ')[1].toLowerCase())
+  );
+  if (empMatch) return BTF_RESPONSES['employee'](q);
+  // Project with ID (P1, P2 etc.)
+  if (ql.match(/\bp\d\b/i)) return BTF_RESPONSES['project'](q);
+  // Route by keywords
+  if (ql.includes('bench') || ql.includes('risk') || ql.includes('who has highest')) return BTF_RESPONSES['bench risk']();
+  if (ql.includes('demand') || ql.includes('in demand') || ql.includes('most demand') || ql.includes('skill trend')) return BTF_RESPONSES['demand']();
+  if (ql.includes('team') || ql.includes('suggest') || ql.includes('recommend')) return BTF_RESPONSES['team'](q);
+  if (ql.includes('cloud') || ql.includes('aws') || ql.includes('azure') || ql.includes('upskill')) return BTF_RESPONSES['cloud']();
+  if (ql.includes('cost') || ql.includes('saving') || ql.includes('idle') || ql.includes('summary')) return BTF_RESPONSES['cost']();
+  if (ql.includes('intern') || ql.includes('testing task') || ql.includes('best intern')) return BTF_RESPONSES['intern']();
+  if (ql.includes('all project') || ql.includes('show project') || ql.includes('list project')) return BTF_RESPONSES['project'](q);
+  if (ql.includes('project')) return BTF_RESPONSES['project'](q);
+  return BTF_RESPONSES['default'](q);
+}
+
+// ════════════════════════════════════════
+// UI FUNCTIONS
+// ════════════════════════════════════════
+let btfInitialised = false;
+
+function btfOpenChat() {
+  document.getElementById('btf-overlay').classList.add('open');
+  if (!btfInitialised) {
+    btfInitialised = true;
+    // Populate quick buttons
+    const bar = document.getElementById('btf-quick-bar');
+    BTF_QUICK_QUESTIONS.forEach(q => {
+      const b = document.createElement('button');
+      b.className = 'btf-quick-btn';
+      b.textContent = q;
+      b.onclick = () => {
+        document.getElementById('btf-input').value = q;
+        btfSend();
+      };
+      bar.appendChild(b);
+    });
+    // Welcome message
+    btfAppend('bot',
+      `👋 Hi! I'm **Your AI Assistant** for Zensar Workforce Management.\n\n`+
+      `I can help you with:\n`+
+      `• 🔴 Bench risk analysis & alerts\n`+
+      `• 📊 Skill demand trends & gaps\n`+
+      `• 🎯 Team recommendations for any project\n`+
+      `• ☁️ Cloud & upskilling guidance\n`+
+      `• 💰 Idle cost summaries\n`+
+      `• 🎓 Intern allocation\n`+
+      `• 👤 Employee profile lookup\n\n`+
+      `Try the quick buttons above or type any question!`
+    );
+  }
+}
+
+function btfCloseChat() {
+  document.getElementById('btf-overlay').classList.remove('open');
+}
+
+function btfCloseOnBg(e) {
+  if (e.target === document.getElementById('btf-overlay')) btfCloseChat();
+}
+
+function btfSend() {
+  const input = document.getElementById('btf-input');
+  const q = input.value.trim();
+  if (!q) return;
+  btfAppend('user', q);
+  input.value = '';
+  setTimeout(() => btfAppend('bot', btfRespond(q)), 600);
+}
+
+function btfAppend(role, text) {
+  const msgs = document.getElementById('btf-messages');
+  const div  = document.createElement('div');
+  div.className = `btf-msg ${role}`;
+  const html = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+  div.innerHTML = `
+    <div class="btf-avatar">${role==='bot'?'🤖':'👤'}</div>
+    <div class="btf-bubble">${html}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function btfRobotHover(on) {
+  const b = document.getElementById('btf-speech');
+  if (on) {
+    b.textContent = 'Hi Easy-Peasy! 🤖';
+    b.style.background = '#1A4494';
+    b.style.color = '#fff';
+    b.style.borderColor = '#2E7EE0';
+    // Cute boop sound
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [523,659,784,1047].forEach((f,i)=>{
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type='sine'; o.frequency.value=f;
+        g.gain.setValueAtTime(.1, ctx.currentTime+i*.08);
+        g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime+i*.08+.1);
+        o.start(ctx.currentTime+i*.08);
+        o.stop(ctx.currentTime+i*.08+.1);
+      });
+    } catch(e){}
+    setTimeout(()=>{
+      b.textContent='Hi! Easy Tool Here 👋';
+      b.style.background='#fff';
+      b.style.color='#1A4494';
+      b.style.borderColor='#1A4494';
+    }, 1600);
+  }
+}
+</script>
+
+
+
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║         NEXT-LEVEL ENHANCEMENT LAYER v2.0                   ║
+     ║  Buttons · Bar Graphs · Charts · Emoji · Particles · Polish ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<style>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   1. NEXT-LEVEL BUTTON ANIMATIONS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Magnetic glow pulse on primary buttons */
+@keyframes btnPulseGlow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(47,129,247,0); }
+  50%      { box-shadow: 0 0 18px 4px rgba(47,129,247,0.38); }
+}
+@keyframes btnShimmerSweep {
+  0%   { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(220%) skewX(-20deg); }
+}
+
+/* Shimmer sweep wrapper for every button */
+button, .run-btn, .cp-submit, .btn-submit, .convert-btn,
+.topbar-btn, .btf-send-btn, .action-btn, .add-skill-btn,
+.eact-btn.primary, .cp-reset, .filter-chip, .ftag,
+.btf-quick-btn, .ibtn, .cbtn {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate;
+}
+
+/* Shimmer pseudo element */
+button::before, .run-btn::before, .cp-submit::before,
+.btn-submit::before, .convert-btn::before, .topbar-btn::before,
+.btf-send-btn::before, .action-btn::before, .add-skill-btn::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; bottom: 0 !important;
+  left: 0 !important;
+  width: 35% !important;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.13) 50%,
+    transparent 100%) !important;
+  transform: translateX(-120%) skewX(-20deg) !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  transition: none !important;
+}
+button:hover::before, .run-btn:hover::before, .cp-submit:hover::before,
+.btn-submit:hover::before, .convert-btn:hover::before,
+.topbar-btn:hover::before, .btf-send-btn:hover::before,
+.action-btn:hover::before, .add-skill-btn:hover::before {
+  animation: btnShimmerSweep 0.55s ease forwards !important;
+}
+
+/* Primary buttons — magnetic hover + active press */
+.run-btn:hover, .cp-submit:hover, .btn-submit:hover, .convert-btn:hover {
+  transform: translateY(-4px) scale(1.03) !important;
+  box-shadow: 0 10px 32px rgba(47,129,247,0.5),
+              0 2px 8px rgba(47,129,247,0.3),
+              0 0 0 1.5px rgba(47,129,247,0.25) !important;
+  animation: btnPulseGlow 1.4s ease infinite !important;
+}
+.run-btn:active, .cp-submit:active, .btn-submit:active,
+.convert-btn:active, .btf-send-btn:active {
+  transform: scale(0.95) !important;
+  box-shadow: 0 2px 8px rgba(47,129,247,0.2) !important;
+  animation: none !important;
+}
+
+/* Chatbot send — orange glow pulse */
+@keyframes orangePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(232,70,15,0); }
+  50%      { box-shadow: 0 0 20px 5px rgba(232,70,15,0.4); }
+}
+.btf-send-btn:hover {
+  transform: translateY(-3px) scale(1.06) !important;
+  animation: orangePulse 1.2s ease infinite !important;
+}
+
+/* Nav items — enhanced slide with left-border grow */
+.nav-item:hover {
+  transform: translateX(5px) !important;
+  border-left-color: rgba(47,129,247,0.5) !important;
+}
+.nav-item.active {
+  box-shadow: inset 3px 0 12px rgba(47,129,247,0.15) !important;
+}
+
+/* Filter chips / trend chips — springy pop */
+.filter-chip:hover, .ftag:hover, .trend-chip:hover {
+  transform: translateY(-3px) scale(1.07) !important;
+  box-shadow: 0 5px 18px rgba(47,129,247,0.28) !important;
+}
+
+/* Action buttons — color-aware glow */
+.action-btn:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+  box-shadow: 0 4px 16px rgba(61,142,240,0.3) !important;
+}
+.action-btn.danger:hover {
+  box-shadow: 0 4px 16px rgba(224,90,58,0.35) !important;
+}
+.action-btn.success:hover {
+  box-shadow: 0 4px 16px rgba(29,168,122,0.35) !important;
+}
+.action-btn.warning:hover {
+  box-shadow: 0 4px 16px rgba(232,160,32,0.35) !important;
+}
+
+/* topbar-btn: icon grow on hover */
+.topbar-btn:hover svg { transform: scale(1.2) rotate(-5deg); transition: transform 0.2s ease; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   2. BAR GRAPH NEXT-LEVEL ANIMATIONS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Bar fill: spring-overshoot grow + shimmer */
+@keyframes barGrowSpring {
+  0%   { width: 0 !important; opacity: 0.5; }
+  70%  { width: calc(var(--bar-w, 100%) + 4%) !important; opacity: 1; }
+  85%  { width: calc(var(--bar-w, 100%) - 1%) !important; }
+  100% { width: var(--bar-w, 100%) !important; opacity: 1; }
+}
+@keyframes barShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.bar-fill {
+  width: 0 !important;
+  animation: barGrowSpring 1.1s cubic-bezier(.34,1.2,.64,1) forwards !important;
+  animation-delay: var(--bar-delay, 0.2s) !important;
+  position: relative !important;
+  background-size: 200% auto !important;
+  transition: filter 0.2s ease !important;
+}
+.bar-track:hover .bar-fill {
+  filter: brightness(1.25) !important;
+  box-shadow: 0 0 8px rgba(47,129,247,0.5) !important;
+}
+
+/* Stagger bar delays */
+.bar-row:nth-child(1) .bar-fill { --bar-delay: 0.1s; }
+.bar-row:nth-child(2) .bar-fill { --bar-delay: 0.2s; }
+.bar-row:nth-child(3) .bar-fill { --bar-delay: 0.3s; }
+.bar-row:nth-child(4) .bar-fill { --bar-delay: 0.4s; }
+.bar-row:nth-child(5) .bar-fill { --bar-delay: 0.5s; }
+.bar-row:nth-child(6) .bar-fill { --bar-delay: 0.6s; }
+.bar-row:nth-child(7) .bar-fill { --bar-delay: 0.7s; }
+.bar-row:nth-child(8) .bar-fill { --bar-delay: 0.8s; }
+
+/* Bar row hover — slide label + glow fill */
+.bar-row {
+  transition: transform 0.18s ease !important;
+  cursor: default;
+}
+.bar-row:hover {
+  transform: translateX(3px) !important;
+}
+.bar-row:hover .bar-label {
+  color: var(--text-primary, #e6edf3) !important;
+  font-weight: 600 !important;
+}
+.bar-row:hover .bar-val {
+  color: var(--accent-blue, #2f81f7) !important;
+  font-weight: 700 !important;
+}
+
+/* Progress bars (course progress) */
+@keyframes progFill {
+  from { width: 0; }
+  to   { width: var(--prog-w, 100%); }
+}
+.prog-fill {
+  animation: progFill 1.2s cubic-bezier(.4,0,.2,1) forwards !important;
+  animation-delay: 0.4s !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   3. CHART.JS CANVAS — glow border on hover
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.ccrd, .card { position: relative; }
+.ccrd canvas, .card canvas {
+  transition: filter 0.25s ease, transform 0.25s ease !important;
+  border-radius: 8px;
+}
+.ccrd:hover canvas, .card:hover canvas {
+  filter: brightness(1.08) saturate(1.15) !important;
+  transform: scale(1.012) !important;
+}
+
+/* Chart card — colored border glow on hover */
+.ccrd:hover {
+  border-color: rgba(47,129,247,0.4) !important;
+  box-shadow: 0 0 0 1px rgba(47,129,247,0.15),
+              0 12px 36px rgba(0,0,0,0.3) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   4. PROFESSIONAL EMOJI ANIMATIONS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Heartbeat for status/alert emojis */
+@keyframes emojiHeartbeat {
+  0%,100% { transform: scale(1); }
+  14%  { transform: scale(1.22); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.18); }
+  70%  { transform: scale(1); }
+}
+/* Orbit spin */
+@keyframes emojiOrbit {
+  0%   { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+/* Float bob */
+@keyframes emojiBob {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-4px) scale(1.06); }
+}
+/* Wiggle */
+@keyframes emojiWiggle {
+  0%,100% { transform: rotate(0deg); }
+  20%     { transform: rotate(-12deg) scale(1.15); }
+  40%     { transform: rotate(10deg) scale(1.12); }
+  60%     { transform: rotate(-8deg); }
+  80%     { transform: rotate(6deg); }
+}
+
+/* Brand icon orbit on hover */
+.brand-icon:hover, .sb-brand:hover .brand-icon {
+  animation: emojiOrbit 0.7s ease !important;
+}
+
+/* Nav icon wiggle on hover */
+.nav-item:hover .ni,
+.nav-item:hover svg:first-child {
+  display: inline-block !important;
+  animation: emojiWiggle 0.5s ease !important;
+}
+
+/* Metric card emoji bob */
+.mc-val, .kpi-value {
+  display: inline-block;
+}
+
+/* Warning/danger badge heartbeat */
+.nb-red, .badge-red, .badge-coral,
+.tbadge-red, .eb-failed {
+  animation: emojiHeartbeat 2.2s ease infinite !important;
+}
+
+/* Live dot pulse — enhanced with color wave */
+@keyframes liveDotWave {
+  0%   { box-shadow: 0 0 0 0 rgba(63,185,80,0.7); transform: scale(1); }
+  40%  { box-shadow: 0 0 0 6px rgba(63,185,80,0); transform: scale(1.2); }
+  100% { box-shadow: 0 0 0 0 rgba(63,185,80,0); transform: scale(1); }
+}
+.ldot, .live-dot {
+  animation: liveDotWave 1.6s ease-in-out infinite !important;
+}
+
+/* Report icon bob */
+.report-icon, .eng-icon, .cards-title-icon, .cp-section-icon {
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1) !important;
+}
+.report-item:hover .report-icon,
+.engine:hover .eng-icon {
+  animation: emojiBob 0.6s ease !important;
+}
+
+/* Risk score circle heartbeat when high */
+.risk-high {
+  animation: emojiHeartbeat 2s ease infinite !important;
+}
+
+/* Confirm modal icon pop */
+.confirm-icon {
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1) !important;
+}
+.confirm-icon:hover {
+  transform: scale(1.15) rotate(-5deg) !important;
+}
+
+/* Emoji in btf chatbot bubble — subtle bob */
+.btf-bubble strong { transition: color 0.2s; }
+.btf-avatar {
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1) !important;
+}
+.btf-msg:hover .btf-avatar {
+  animation: emojiBob 0.6s ease !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   5. ROBOT BUTTON — super enhanced
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes robotOrbitGlow {
+  0%   { box-shadow: 0 4px 20px rgba(11,28,61,.4),  0 0 0 0 rgba(46,126,224,0.7); }
+  50%  { box-shadow: 0 4px 24px rgba(11,28,61,.5),  0 0 0 10px rgba(46,126,224,0); }
+  100% { box-shadow: 0 4px 20px rgba(11,28,61,.4),  0 0 0 0 rgba(46,126,224,0); }
+}
+@keyframes robotSpin {
+  0%   { transform: scale(1.15) rotate(0deg); }
+  25%  { transform: scale(1.18) rotate(-10deg); }
+  75%  { transform: scale(1.18) rotate(10deg); }
+  100% { transform: scale(1.15) rotate(0deg); }
+}
+#btf-robot-btn:hover {
+  animation: robotOrbitGlow 1s ease infinite !important;
+}
+#btf-robot-btn:hover svg {
+  animation: robotSpin 0.5s ease !important;
+}
+
+/* Speech bubble — slide in on appear */
+@keyframes speechSlide {
+  from { opacity: 0; transform: translateX(10px) scale(0.9); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+#btf-speech {
+  animation: speechSlide 0.4s cubic-bezier(.34,1.56,.64,1) both !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   6. KPI CARD — colored top border glow on hover
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.mc-blue:hover::before  { box-shadow: 0 2px 14px rgba(47,129,247,0.7); height: 4px !important; }
+.mc-red:hover::before   { box-shadow: 0 2px 14px rgba(247,129,102,0.7); height: 4px !important; }
+.mc-green:hover::before { box-shadow: 0 2px 14px rgba(63,185,80,0.7); height: 4px !important; }
+.mc-warn:hover::before  { box-shadow: 0 2px 14px rgba(210,153,34,0.7); height: 4px !important; }
+.kpi-card.blue:hover::before  { box-shadow: 0 2px 14px rgba(61,142,240,0.7); height: 3px !important; }
+.kpi-card.coral:hover::before { box-shadow: 0 2px 14px rgba(224,90,58,0.7); height: 3px !important; }
+.kpi-card.green:hover::before { box-shadow: 0 2px 14px rgba(62,168,74,0.7); height: 3px !important; }
+.kpi-card.amber:hover::before { box-shadow: 0 2px 14px rgba(232,160,32,0.7); height: 3px !important; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   7. TABLE ROW — animated highlight
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+tbody tr {
+  transition: background 0.15s ease, transform 0.15s ease !important;
+}
+tbody tr:hover td {
+  background: rgba(47,129,247,0.06) !important;
+}
+tbody tr:hover {
+  transform: translateX(2px) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   8. SKILL / BADGE CHIPS — colorful hover
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.skill-tag, .skill-chip, .badge, .tag-pill, .ptag,
+.ebadge, .emp-match-badge, .smart-pill {
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1),
+              box-shadow 0.18s ease,
+              filter 0.15s ease !important;
+  cursor: default;
+}
+.skill-tag:hover, .skill-chip:hover, .badge:hover,
+.tag-pill:hover, .ptag:hover {
+  transform: translateY(-2px) scale(1.08) !important;
+  filter: brightness(1.2) !important;
+  box-shadow: 0 3px 10px rgba(47,129,247,0.25) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   9. GIGS / COURSES / REPORT ITEMS — entrance stagger
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes itemRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.gig-card, .skill-course, .report-item, .risk-row, .proj-item {
+  animation: itemRise 0.4s ease both !important;
+}
+.gig-card:nth-child(1), .skill-course:nth-child(1), .report-item:nth-child(1), .risk-row:nth-child(1) { animation-delay: 0.05s !important; }
+.gig-card:nth-child(2), .skill-course:nth-child(2), .report-item:nth-child(2), .risk-row:nth-child(2) { animation-delay: 0.12s !important; }
+.gig-card:nth-child(3), .skill-course:nth-child(3), .report-item:nth-child(3), .risk-row:nth-child(3) { animation-delay: 0.19s !important; }
+.gig-card:nth-child(4), .skill-course:nth-child(4), .report-item:nth-child(4), .risk-row:nth-child(4) { animation-delay: 0.26s !important; }
+.gig-card:nth-child(5), .skill-course:nth-child(5), .report-item:nth-child(5), .risk-row:nth-child(5) { animation-delay: 0.33s !important; }
+.gig-card:nth-child(6), .skill-course:nth-child(6), .report-item:nth-child(6)                         { animation-delay: 0.40s !important; }
+
+.gig-card:hover, .skill-course:hover {
+  transform: translateY(-4px) !important;
+  border-color: rgba(47,129,247,0.4) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+.report-item:hover {
+  transform: translateX(4px) !important;
+  border-color: rgba(47,129,247,0.35) !important;
+}
+.risk-row:hover {
+  transform: translateX(4px) !important;
+  border-color: rgba(47,129,247,0.3) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   10. MODAL — spring entrance
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes modalSpring {
+  0%   { opacity: 0; transform: scale(0.88) translateY(-20px); }
+  60%  { opacity: 1; transform: scale(1.02) translateY(2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-overlay.show .modal,
+.btf-overlay.open .btf-modal {
+  animation: modalSpring 0.38s cubic-bezier(.34,1.2,.64,1) both !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   11. TOPBAR TAGS — shimmer
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes tagShimmer {
+  0%   { left: -80%; }
+  60%  { left: 130%; }
+  100% { left: 130%; }
+}
+.topbar-tag.ai, .tbadge-blue, .ai-pill {
+  position: relative !important;
+  overflow: hidden !important;
+}
+.topbar-tag.ai::after, .tbadge-blue::after, .ai-pill::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; bottom: 0 !important;
+  width: 50% !important;
+  background: linear-gradient(90deg,
+    transparent, rgba(255,255,255,0.2), transparent) !important;
+  animation: tagShimmer 3s ease-in-out infinite !important;
+  pointer-events: none !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   12. DETAIL PANEL — slide-in enhanced
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.detail-panel.show {
+  box-shadow: -12px 0 50px rgba(0,0,0,0.5),
+              -1px 0 0 rgba(47,129,247,0.15) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   13. FOCUS — polished ring
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.finput:focus, .fselect:focus, .ftextarea:focus,
+.form-input:focus, .search-bar:focus-within,
+.settings-input:focus, .settings-select:focus,
+.btf-input:focus {
+  border-color: rgba(47,129,247,0.7) !important;
+  box-shadow: 0 0 0 3px rgba(47,129,247,0.15),
+              0 0 12px rgba(47,129,247,0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   14. TOAST — enhanced bounce-in
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes toastBounce {
+  0%   { opacity: 0; transform: translateY(30px) scale(0.85); }
+  60%  { opacity: 1; transform: translateY(-4px) scale(1.03); }
+  80%  { transform: translateY(2px) scale(0.99); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.toast.show, #toast.show {
+  animation: toastBounce 0.45s cubic-bezier(.34,1.2,.64,1) both !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   15. SCROLLBAR — polished thin
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(47,129,247,0.25);
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(47,129,247,0.5); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   16. AMBIENT GRADIENT CURSOR FOLLOWER (CSS only helper)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#nl-cursor-glow {
+  position: fixed;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(47,129,247,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  transition: left 0.12s ease, top 0.12s ease;
+  will-change: left, top;
+}
+</style>
+
+<script>
+/* ═══════════════ NEXT-LEVEL JS ENHANCEMENTS ═══════════════ */
+(function() {
+  // ── 1. Bind --bar-w and --prog-w CSS vars so spring animations work ──
+  function bindAllWidths() {
+    // .bar-fill elements
+    document.querySelectorAll('.bar-fill').forEach(el => {
+      const iw = el.style.width;
+      if (iw && iw !== '0' && iw !== '0%') {
+        el.style.setProperty('--bar-w', iw);
+        el.style.removeProperty('width');
+      }
+    });
+    // .prog-fill elements (course progress)
+    document.querySelectorAll('.prog-fill').forEach(el => {
+      const iw = el.style.width;
+      if (iw && iw !== '0' && iw !== '0%') {
+        el.style.setProperty('--prog-w', iw);
+        el.style.removeProperty('width');
+      }
+    });
+  }
+
+  // ── 2. Ambient cursor glow ──
+  function initCursorGlow() {
+    const glow = document.createElement('div');
+    glow.id = 'nl-cursor-glow';
+    document.body.appendChild(glow);
+    document.addEventListener('mousemove', e => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top  = e.clientY + 'px';
+    });
+  }
+
+  // ── 3. Animated number counter for KPI values ──
+  function animateCounters() {
+    document.querySelectorAll('.mc-val, .kpi-value, .estat-val').forEach(el => {
+      const raw = el.textContent.replace(/,/g, '').trim();
+      const num = parseFloat(raw);
+      if (isNaN(num) || num === 0) return;
+      const isInt = Number.isInteger(num) && !raw.includes('.');
+      const prefix = raw.match(/^[^\d]*/)?.[0] || '';
+      const suffix = raw.match(/[^\d.]+$/)?.[0] || '';
+      const duration = 900;
+      const startTime = performance.now();
+      el.style.opacity = '1'; // ensure visible
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out quart
+        const eased = 1 - Math.pow(1 - progress, 4);
+        const current = num * eased;
+        const display = isInt
+          ? Math.round(current).toLocaleString()
+          : current.toFixed(1);
+        el.textContent = prefix + display + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  // ── 4. Stagger re-animate bars when a tab/page switches ──
+  function reAnimateBars() {
+    document.querySelectorAll('.bar-fill, .prog-fill').forEach(el => {
+      el.style.animation = 'none';
+      el.style.width = '0';
+      void el.offsetHeight; // reflow
+      el.style.animation = '';
+    });
+    setTimeout(bindAllWidths, 30);
+  }
+
+  // ── 5. Table row hover — add ripple-like highlight ──
+  function initTableRows() {
+    document.querySelectorAll('tbody tr').forEach(row => {
+      row.addEventListener('mouseenter', () => {
+        row.style.transition = 'background 0.15s ease, transform 0.15s ease';
+      });
+    });
+  }
+
+  // ── 6. Observe DOM for dynamically added bars ──
+  const barObs = new MutationObserver(() => {
+    setTimeout(bindAllWidths, 80);
+  });
+
+  // ── 7. Tab / nav click: re-trigger entrance animations ──
+  function hookTabSwitches() {
+    document.querySelectorAll(
+      '.tab, .nav-item, button[onclick*="switchTab"], button[onclick*="showPage"]'
+    ).forEach(btn => {
+      btn.addEventListener('click', () => {
+        setTimeout(() => {
+          reAnimateBars();
+          // Re-trigger card stagger
+          document.querySelectorAll('.panel.active .mc, .page.active .kpi-card').forEach((c, i) => {
+            c.style.animation = 'none';
+            void c.offsetHeight;
+            c.style.animation = '';
+            c.style.animationDelay = (0.05 + i * 0.07) + 's';
+          });
+          // Re-animate counters in active panel
+          setTimeout(animateCounters, 120);
+        }, 60);
+      });
+    });
+  }
+
+  // ── INIT ──
+  document.addEventListener('DOMContentLoaded', () => {
+    initCursorGlow();
+    setTimeout(bindAllWidths, 80);
+    setTimeout(animateCounters, 200);
+    initTableRows();
+    hookTabSwitches();
+    barObs.observe(document.body, {
+      childList: true, subtree: true,
+      attributes: true, attributeFilter: ['style']
+    });
+  });
+
+  // Also run immediately for already-loaded content
+  if (document.readyState !== 'loading') {
+    setTimeout(() => {
+      bindAllWidths();
+      animateCounters();
+      initTableRows();
+      hookTabSwitches();
+      initCursorGlow();
+    }, 150);
+  }
+})();
+</script>
+<!-- ╚══════════════════════════════════════════════════════════════╝
+     END NEXT-LEVEL ENHANCEMENT LAYER v2.0
+     ╚══════════════════════════════════════════════════════════════╝ -->
+
+</body>
+</html>
